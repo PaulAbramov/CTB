@@ -1,10 +1,7 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Net;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using SteamKit2;
 
 namespace CTB.Web
@@ -16,45 +13,32 @@ namespace CTB.Web
         public string SteamLoginSecure { get; private set; }
 
         public readonly WebHelper m_WebHelper = new WebHelper();
+
+        private SteamClient m_steamClient;
+        private string m_webAPIUserNonce;
+
         private const string SteamCommunityHost = "steamcommunity.com";
-        
-        private CancellationTokenSource m_authenticateUserTokenSource;
 
         /// <summary>
-        /// Initialize the cancellation token, we are going to need it to cancel the whole task
-        /// Create a new task, which runs parallel
-        /// While the task is not canceled try to authenticate the user every hour, so we are getting reconnected if we are disconnected
-        /// 
-        /// After canceling the task, print a message and free the allocated memory
+        /// Send a request to the homepage of steam, check if there is something with "profiles/OurSteamID64/friends"
+        /// If there is such a content inside the string, then we are still authenticated return true, so we know we are loggedon
+        /// If there is not such a content inside the string, then we are not authenticated and try to authenticate to the web again
         /// </summary>
-        /// <param name="_steamClient"></param>
-        /// <param name="_webAPIUserNonce"></param>
-        public void StartAuthenticateUserLoop(SteamClient _steamClient, string _webAPIUserNonce)
+        /// <returns></returns>
+        public bool RefreshSessionIfNeeded()
         {
-            m_authenticateUserTokenSource = new CancellationTokenSource();
+            string response = m_WebHelper.GetStringFromRequest("http://steamcommunity.com/");
 
-            Task.Run(async () =>
+            Match isLoggedOn = Regex.Match(response, @"profiles\/[\d]+\/friends", RegexOptions.IgnoreCase);
+
+            if (!isLoggedOn.Success)
             {
-                while(!m_authenticateUserTokenSource.Token.IsCancellationRequested)
-                {
-                    AuthenticateUser(_steamClient, _webAPIUserNonce);
-
-                    await Task.Delay(TimeSpan.FromHours(1));
-                }
-
-                Console.WriteLine("Cancelled the AuthenticateTask.");
-                m_authenticateUserTokenSource.Dispose();
-            }, m_authenticateUserTokenSource.Token);
-
-            //task.Dispose();
-        }
-
-        /// <summary>
-        /// Cancel the task from the function "StartAuthenticateUserLoop" if the token is not null
-        /// </summary>
-        public void StopAuthenticateUserLoop()
-        {
-            m_authenticateUserTokenSource?.Cancel();
+                return AuthenticateUser(m_steamClient, m_webAPIUserNonce);
+            }
+            else
+            {
+                return true;
+            }
         }
 
         /// <summary>
@@ -62,6 +46,9 @@ namespace CTB.Web
         /// </summary>
         public bool AuthenticateUser(SteamClient _steamClient, string _webAPIUserNonce )
         {
+            m_steamClient = _steamClient;
+            m_webAPIUserNonce = _webAPIUserNonce;
+
             // Get the interface for the authentication of the steamuser
             using (dynamic authenticator = WebAPI.GetInterface("ISteamUserAuth"))
             {

@@ -56,7 +56,7 @@ namespace CTB.HelperClasses
                     await Task.Delay(TimeSpan.FromSeconds(2));
                 }
 
-                Console.WriteLine("Cancelled the TradeOfferTask");
+                Console.WriteLine("Cancelled the TradeOfferTask.");
                 m_tradeOfferCancellationTokenSource.Dispose();
             }, m_tradeOfferCancellationTokenSource.Token);
         }
@@ -66,7 +66,22 @@ namespace CTB.HelperClasses
         /// </summary>
         public void StopCheckForTradeOffers()
         {
-            m_tradeOfferCancellationTokenSource?.Cancel();
+            try
+            {
+                m_tradeOfferCancellationTokenSource?.Cancel();
+            }
+            catch (Exception exception)
+            {
+                if (exception.GetType() == typeof(ObjectDisposedException))
+                {
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine(exception);
+                    throw;
+                }
+            }
         }
 
         /// <summary>
@@ -111,6 +126,12 @@ namespace CTB.HelperClasses
                         Console.WriteLine("Accept the trade offer " + tradeOffer.TradeOfferID + " via your email");
                         tradeOfferHandledCounter++;
 
+                        continue;
+                    }
+
+                    //  If we were not logged on to the web or the authentication failed, go to the next tradeoffer and check it again
+                    if(!m_steamWeb.RefreshSessionIfNeeded())
+                    {
                         continue;
                     }
 
