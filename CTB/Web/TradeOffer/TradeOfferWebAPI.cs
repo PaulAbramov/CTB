@@ -213,8 +213,8 @@ namespace CTB.Web.TradeOffer
 
             TradeOfferAcceptResponse acceptResponse = JsonConvert.DeserializeObject<TradeOfferAcceptResponse>(response);
 
-            if (acceptResponse.TradeID != null || acceptResponse.NeedsEmailConfirmation || acceptResponse.NeedsMobileConfirmation)
-                {
+            if(acceptResponse != null && (acceptResponse.TradeID != null || acceptResponse.NeedsEmailConfirmation || acceptResponse.NeedsMobileConfirmation))
+            {
                 return true;
             }
             else
@@ -422,7 +422,7 @@ namespace CTB.Web.TradeOffer
         /// Get the escrowduration in days from the trade
         /// 
         /// Therefor send a request to get information about the tradeoffer
-        /// Search for our and their Escrowduration, if successful, give the value out, else throw an exception
+        /// Search for our and their Escrowduration, if successful, give the value out, else throw an exception which will tell us, what went wrong
         /// </summary>
         /// <param name="_tradeofferID"></param>
         /// <returns></returns>
@@ -434,18 +434,24 @@ namespace CTB.Web.TradeOffer
 
             Match ourMatch = Regex.Match(response, @"g_daysMyEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);
             Match theirMatch = Regex.Match(response, @"g_daysTheirEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);
-
-            if (!ourMatch.Groups["days"].Success || !theirMatch.Groups["days"].Success)
+            try
             {
-                Match steamErrorMatch = Regex.Match(response, @"<div id=""error_msg"">([^>]+)<\/div>", RegexOptions.IgnoreCase);
-
-                if (steamErrorMatch.Groups.Count > 1)
+                if (!ourMatch.Groups["days"].Success || !theirMatch.Groups["days"].Success)
                 {
-                    string steamError = Regex.Replace(steamErrorMatch.Groups[1].Value.Trim(), @"\t|\n|\r", "");
-                    throw new TradeOfferEscrowDurationParseException(steamError);
-                }
+                    Match steamErrorMatch = Regex.Match(response, @"<div id=""error_msg"">([^>]+)<\/div>", RegexOptions.IgnoreCase);
 
-                throw new TradeOfferEscrowDurationParseException(string.Empty);
+                    if (steamErrorMatch.Groups.Count > 1)
+                    {
+                        string steamError = Regex.Replace(steamErrorMatch.Groups[1].Value.Trim(), @"\t|\n|\r", "");
+                        throw new TradeOfferEscrowDurationParseException(steamError);
+                    }
+
+                    throw new TradeOfferEscrowDurationParseException($"Not logged in, can't retrieve escrow duration for tradeofferID: {_tradeofferID}");
+                }
+            }
+            catch (TradeOfferEscrowDurationParseException exception)
+            {
+                Console.WriteLine(exception);
             }
 
             return new TradeOfferEscrowDuration()
@@ -460,10 +466,7 @@ namespace CTB.Web.TradeOffer
         /// </summary>
         /// <param name="_value"></param>
         /// <returns></returns>
-        private static int BoolToInt(bool _value)
-        {
-            return _value ? 1 : 0;
-        }
+        private static int BoolToInt(bool _value) => _value ? 1 : 0;
     }
 
     /// <summary>
