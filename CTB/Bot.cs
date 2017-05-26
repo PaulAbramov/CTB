@@ -46,7 +46,7 @@ namespace CTB
 
             m_steamFriends = m_steamClient.GetHandler<SteamFriends>();
 
-#region Callbacks
+            #region Callbacks
             #region SteamClient Callbacks
             m_callbackManager.Subscribe<SteamClient.ConnectedCallback>(OnConnected);
             m_callbackManager.Subscribe<SteamClient.DisconnectedCallback>(OnDisconnected);
@@ -55,8 +55,11 @@ namespace CTB
             #region SteamUser Callbacks
             m_callbackManager.Subscribe<SteamUser.LoggedOnCallback>(OnLoggedOn);
             m_callbackManager.Subscribe<SteamUser.UpdateMachineAuthCallback>(OnMachineAuth);
-            m_callbackManager.Subscribe<SteamUser.AccountInfoCallback>(OnLoadedAccountInfo);
             m_callbackManager.Subscribe<SteamUser.LoggedOffCallback>(OnLoggedOff);
+            #endregion
+
+            #region SteamFriends Callbacks
+            m_callbackManager.Subscribe<SteamFriends.FriendsListCallback>(OnLoadedFriendsList);
             #endregion
             #endregion
 
@@ -266,23 +269,18 @@ namespace CTB
         }
 
         /// <summary>
-        /// Perform action on loaded AccountInfo, happens shortly after successful login
-        /// Set the current state to online
-        /// Authenticate in the web so we can perform action we can not perform with SteamKit2
-        /// Start a Task which runs parallel and checks every hour for the connection
-        /// Get the active tradeoffers so we can handle these
+        /// Callback will be called if our friendslist is successfully loaded
+        /// Set our state to online and change our name to the name inside the config
         /// </summary>
         /// <param name="_callback"></param>
-        private void OnLoadedAccountInfo(SteamUser.AccountInfoCallback _callback)
+        private void OnLoadedFriendsList(SteamFriends.FriendsListCallback _callback)
         {
             m_steamFriends.SetPersonaState(EPersonaState.Online);
-            
-            if(!string.IsNullOrEmpty(m_botName))
+
+            if (!string.IsNullOrEmpty(m_botName))
             {
                 m_steamFriends.SetPersonaName(m_botName);
             }
-
-            Console.WriteLine("Successfully loaded AccountInfos.");
         }
 
         /// <summary>
