@@ -55,7 +55,6 @@ namespace CTB
             #region SteamUser Callbacks
             m_callbackManager.Subscribe<SteamUser.LoggedOnCallback>(OnLoggedOn);
             m_callbackManager.Subscribe<SteamUser.UpdateMachineAuthCallback>(OnMachineAuth);
-            m_callbackManager.Subscribe<SteamUser.LoginKeyCallback>(OnLoginKey);
             m_callbackManager.Subscribe<SteamUser.AccountInfoCallback>(OnLoadedAccountInfo);
             m_callbackManager.Subscribe<SteamUser.LoggedOffCallback>(OnLoggedOff);
             #endregion
@@ -139,6 +138,7 @@ namespace CTB
 
         /// <summary>
         /// Throw a message if we are successfully logged on
+        /// Authenticate in the web and start polling for trades
         /// 
         /// If we do not have linked a authenticator to our phone, print a message to let the user know to enter the code sent to the email
         /// If we do have linked a authenticator to our phone, try to get the authcode from our mobileHelper
@@ -160,6 +160,15 @@ namespace CTB
             {
                 case EResult.OK:
                     Console.WriteLine("Successfully logged on.");
+
+                    bool loggedon = m_steamWeb.AuthenticateUser(m_steamClient, m_webAPIUserNonce);
+
+                    if (loggedon)
+                    {
+                        Console.WriteLine("Successfully authenticated the user in the web.");
+
+                        m_tradeOfferHelper.StartCheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
+                    }
                     break;
                case EResult.AccountLogonDenied:
                     Console.WriteLine("Enter the auth code sent to the email at {0}: ", _callback.EmailDomain);
@@ -257,15 +266,6 @@ namespace CTB
         }
 
         /// <summary>
-        /// Perform action if we are logged in completly
-        /// </summary>
-        /// <param name="_callback"></param>
-        private void OnLoginKey(SteamUser.LoginKeyCallback _callback)
-        {
-            
-        }
-
-        /// <summary>
         /// Perform action on loaded AccountInfo, happens shortly after successful login
         /// Set the current state to online
         /// Authenticate in the web so we can perform action we can not perform with SteamKit2
@@ -283,17 +283,6 @@ namespace CTB
             }
 
             Console.WriteLine("Successfully loaded AccountInfos.");
-
-            bool loggedon = m_steamWeb.AuthenticateUser(m_steamClient, m_webAPIUserNonce);
-
-            if(loggedon)
-            {
-                Console.WriteLine("Successfully authenticated the user in the web.");
-
-                m_tradeOfferHelper.StartCheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
-            }
-
-            m_steamWeb.StartAuthenticateUserLoop(m_steamClient, m_webAPIUserNonce);
         }
 
         /// <summary>
@@ -304,7 +293,6 @@ namespace CTB
         {
             Console.WriteLine("Logged off of Steam: {0}", _callback.Result);
 
-            m_steamWeb.StopAuthenticateUserLoop();
             m_tradeOfferHelper.StopCheckForTradeOffers();
         }
 
@@ -318,7 +306,6 @@ namespace CTB
         {
             Console.WriteLine("Disconnected from Steam, try to connect again in 5 seconds!");
 
-            m_steamWeb.StopAuthenticateUserLoop();
             m_tradeOfferHelper.StopCheckForTradeOffers();
 
             Thread.Sleep(TimeSpan.FromSeconds(5));
