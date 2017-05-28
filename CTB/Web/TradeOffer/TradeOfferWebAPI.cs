@@ -245,6 +245,28 @@ namespace CTB.Web.TradeOffer
         }
 
         /// <summary>
+        /// Simplified function, which also gives out a short consoletext
+        /// uses the webfunction internal
+        /// </summary>
+        /// <param name="_tradeOfferID"></param>
+        /// <returns></returns>
+        public bool AcceptTradeofferShortMessage(string _tradeOfferID)
+        {
+            bool acceptedOffer = AcceptTradeOffer(_tradeOfferID);
+
+            if (acceptedOffer)
+            {
+                Console.WriteLine($"Accepted offer: {_tradeOfferID}");
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// WebFunction, use it to modify your response/consoleoutput after getting this
         /// 
         /// Decline the tradeoffer with the given tradeOfferID
@@ -278,6 +300,28 @@ namespace CTB.Web.TradeOffer
             if (declinedoffer)
             {
                 Console.WriteLine("Declined the offer with the id " + _tradeOfferID + " from the user " + _partnerID.ConvertToUInt64().ToString());
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Simplified function, which also gives out a short consoletext
+        /// uses the webfunction internal
+        /// </summary>
+        /// <param name="_tradeOfferID"></param>
+        /// <returns></returns>
+        public bool DeclineTradeofferShortMessage(string _tradeOfferID)
+        {
+            bool declinedoffer = DeclineTradeOffer(_tradeOfferID);
+
+            if (declinedoffer)
+            {
+                Console.WriteLine($"Declined offer: {_tradeOfferID}");
 
                 return true;
             }
