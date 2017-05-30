@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using SteamKit2;
 
 namespace CTB.HelperClasses
@@ -16,7 +17,18 @@ namespace CTB.HelperClasses
         public SteamID GetSteamID(int _accountid)
         {
             string id32 = $"STEAM_0:{_accountid & 1}:{_accountid >> 1}";
-            return new SteamID(id32).ConvertToUInt64();
+            return new SteamID(id32);
+        }
+
+        /// <summary>
+        /// Gets the SteamID for the short groupID
+        /// We have to set this steamID to public and to a clan, so we get the right SteamID
+        /// </summary>
+        /// <param name="_groupID"></param>
+        /// <returns></returns>
+        public SteamID GetGroupID(uint _groupID)
+        {
+            return new SteamID(_groupID, EUniverse.Public, EAccountType.Clan);
         }
 
         /// <summary>

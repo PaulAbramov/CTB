@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Web;
 
 namespace CTB.Web
 {
@@ -60,7 +61,7 @@ namespace CTB.Web
         /// <returns></returns>
         public HttpWebResponse SendWebRequest(string _url, NameValueCollection _data = null, bool _isGetMethod = true, string _referer = null)
         {
-            string dataString = _data == null ? null : string.Join("&", Array.ConvertAll(_data.AllKeys, _key => $"{_key}={_data[_key]}"));
+            string dataString = _data == null ? null : string.Join("&", Array.ConvertAll(_data.AllKeys, _key => $"{HttpUtility.UrlEncode(_key)}={HttpUtility.UrlEncode(_data[_key])}"));
 
             if(_isGetMethod && !string.IsNullOrEmpty(dataString))
             {

@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using System.Threading;
 using CTB.HelperClasses;
 using CTB.JsonClasses;
+using CTB.Web.JsonClasses;
+using CTB.Web.TradeOffer;
 using SteamAuth;
 using SteamKit2;
 using SteamWeb = CTB.Web.SteamWeb;
@@ -75,7 +77,7 @@ namespace CTB
                 ShouldRememberPassword = true
             };
 
-            m_steamWeb = new SteamWeb();
+            m_steamWeb = new SteamWeb(_botInfo.APIKey);
             m_mobileHelper = new MobileHelper();
             m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, m_steamWeb, _botInfo);
 
@@ -280,6 +282,20 @@ namespace CTB
             if (!string.IsNullOrEmpty(m_botName))
             {
                 m_steamFriends.SetPersonaName(m_botName);
+            }
+
+            foreach(SteamFriends.FriendsListCallback.Friend friend in _callback.FriendList)
+            {
+                if(friend.Relationship == EFriendRelationship.RequestRecipient)
+                {
+                    m_steamFriends.AddFriend(friend.SteamID);
+
+                    APIResponse<GetPlayerGroupListResponse> groupList = m_steamWeb.GetUserGroupList(m_steamClient.SteamID);
+
+                    SteamID groupID = m_steamFriendsHelper.GetGroupID(Convert.ToUInt32(groupList.Response.GroupIDs[0].GroupID));
+
+                    m_steamWeb.InviteToGroup(groupID.ToString(), friend.SteamID.ConvertToUInt64().ToString());
+                }
             }
         }
 

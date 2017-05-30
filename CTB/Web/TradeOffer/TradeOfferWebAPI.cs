@@ -209,7 +209,7 @@ namespace CTB.Web.TradeOffer
 
             string referer = $"https://steamcommunity.com/tradeoffer/{_tradeOfferID}";
 
-            string response = m_steamWeb.m_WebHelper.GetStringFromRequest($"https://steamcommunity.com/tradeoffer/{_tradeOfferID}/accept", data, false, referer);
+            string response = m_steamWeb.m_WebHelper.GetStringFromRequest($"{referer}/accept", data, false, referer);
 
             TradeOfferAcceptResponse acceptResponse = JsonConvert.DeserializeObject<TradeOfferAcceptResponse>(response);
 
