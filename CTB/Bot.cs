@@ -295,6 +295,8 @@ namespace CTB
                     SteamID groupID = m_steamFriendsHelper.GetGroupID(Convert.ToUInt32(groupList.Response.GroupIDs[0].GroupID));
 
                     m_steamWeb.InviteToGroup(groupID.ToString(), friend.SteamID.ConvertToUInt64().ToString());
+
+                    m_steamFriends.SendChatMessage(friend.SteamID, EChatEntryType.ChatMsg, "Hello and welcome to my Service!\rI've invited you to my group, where you can check the other bots or get to learn and trade with other steamusers.");
                 }
             }
         }
