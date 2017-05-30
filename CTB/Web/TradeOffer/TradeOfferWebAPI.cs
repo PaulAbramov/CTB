@@ -50,21 +50,23 @@ namespace CTB.Web.TradeOffer
                 throw new ArgumentException("getSentOffers and getReceivedOffers can't be both false, we do not get a response which we can handle");
             }
 
-            string data = $"?key={m_apikey}" +
-                          $"&get_sent_offers={BoolToInt(_getSentOffers)}" +
-                          $"&get_received_offers={BoolToInt(_getReceivedOffers)}" +
-                          $"&get_descriptions={BoolToInt(_getDescription)}" +
-                          $"&language={_language}" +
-                          $"&active_only={BoolToInt(_activeOnly)}" +
-                          $"&historical_only={BoolToInt(_historicalOnly)}" +
-                          $"&time_historical_cutoff={_historicalCutOff}";
-    
+            NameValueCollection data = new NameValueCollection
+            {
+                {"key", m_apikey},
+                {"get_sent_offers", BoolToInt(_getSentOffers).ToString()},
+                {"get_received_offers", BoolToInt(_getReceivedOffers).ToString()},
+                {"get_descriptions", BoolToInt(_getDescription).ToString()},
+                {"language", _language},
+                {"active_only", BoolToInt(_activeOnly).ToString()},
+                {"historical_only", BoolToInt(_historicalOnly).ToString()},
+                {"time_historical_cutoff", _historicalCutOff.ToString()}
+            };
 
-            string url = string.Format(BaseIEconomyURL, "GetTradeOffers", "v1", data);
+            string url = string.Format(BaseIEconomyURL, "GetTradeOffers", "v1", "");
 
             try
             {
-                string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
+                string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url, data);
                 APIResponse<GetOffersResponse> offersResponse = JsonConvert.DeserializeObject<APIResponse<GetOffersResponse>>(response);
                 return offersResponse.Response;
             }
@@ -126,13 +128,18 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public GetOfferResponse GetTradeOffer(string _tradeOfferID, string _language = "en_us")
         {
-            string data = $"?key={m_apikey}&tradeofferid={_tradeOfferID}&language={_language}";
+            NameValueCollection data = new NameValueCollection
+            {
+                {"key", m_apikey},
+                {"tradeofferid", _tradeOfferID},
+                {"language", _language}
+            };
 
-            string url = string.Format(BaseIEconomyURL, "GetTradeOffer", "v1", data);
+            string url = string.Format(BaseIEconomyURL, "GetTradeOffer", "v1", "");
 
             try
             {
-                string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
+                string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url, data);
 
                 APIResponse<GetOfferResponse> offerResponse = JsonConvert.DeserializeObject<APIResponse<GetOfferResponse>>(response);
 
@@ -161,11 +168,16 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public TradeOffersSummaryResponse GetTradeOffersSummary()
         {
-            string url = string.Format(BaseIEconomyURL, "GetTradeOffersSummary", "v1", "?key=" + m_apikey);
+            NameValueCollection data = new NameValueCollection
+            {
+                {"key", m_apikey}
+            };
+
+            string url = string.Format(BaseIEconomyURL, "GetTradeOffersSummary", "v1", "");
 
             try
             {
-                string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
+                string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url, data);
 
                 APIResponse<TradeOffersSummaryResponse> tradeOffersSummaryResponse = JsonConvert.DeserializeObject<APIResponse<TradeOffersSummaryResponse>>(response);
 
@@ -275,7 +287,11 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public bool DeclineTradeOffer(string _tradeOfferID)
         {
-            NameValueCollection data = new NameValueCollection { { "key", m_apikey }, { "tradeofferid", _tradeOfferID } };
+            NameValueCollection data = new NameValueCollection
+            {
+                { "key", m_apikey },
+                { "tradeofferid", _tradeOfferID }
+            };
 
             string url = string.Format(BaseIEconomyURL, "DeclineTradeOffer", "v1", "");
 
