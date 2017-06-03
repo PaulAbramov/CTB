@@ -67,6 +67,7 @@
     <Compile Include="Web\JsonClasses\GetPlayerGroupListResponse.cs" />
     <Compile Include="Web\JsonClasses\GetPlayerSummariesResponse.cs" />
     <Compile Include="Web\JsonClasses\GetPlayerSummary.cs" />
+    <Compile Include="Web\SteamUser\SteamUserWebAPI.cs" />
     <Compile Include="Web\SteamWeb.cs" />
     <Compile Include="Web\TradeOffer\JsonClasses\DescriptionInItemsDescription.cs" />
     <Compile Include="Web\TradeOffer\JsonClasses\GetOfferResponse.cs" />

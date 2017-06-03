@@ -5,6 +5,7 @@ using System.Threading;
 using CTB.HelperClasses;
 using CTB.JsonClasses;
 using CTB.Web.JsonClasses;
+using CTB.Web.SteamUser;
 using CTB.Web.TradeOffer;
 using SteamAuth;
 using SteamKit2;
@@ -24,6 +25,7 @@ namespace CTB
 
         private readonly SteamWeb m_steamWeb;
         private readonly TradeOfferHelperClass m_tradeOfferHelper;
+        private readonly SteamUserWebAPI m_steamUserWebAPI;
         private readonly SteamFriendsHelper m_steamFriendsHelper;
         private readonly MobileHelper m_mobileHelper;
 
@@ -80,7 +82,7 @@ namespace CTB
             m_steamWeb = new SteamWeb(_botInfo.APIKey);
             m_mobileHelper = new MobileHelper();
             m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, m_steamWeb, _botInfo);
-
+            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
             m_steamFriendsHelper = new SteamFriendsHelper();
         }
 
@@ -273,6 +275,8 @@ namespace CTB
         /// <summary>
         /// Callback will be called if our friendslist is successfully loaded
         /// Set our state to online and change our name to the name inside the config
+        /// 
+        /// Check if we have any friendrequests, if we have some, accept them and invite them to our main group
         /// </summary>
         /// <param name="_callback"></param>
         private void OnLoadedFriendsList(SteamFriends.FriendsListCallback _callback)
@@ -290,11 +294,11 @@ namespace CTB
                 {
                     m_steamFriends.AddFriend(friend.SteamID);
 
-                    APIResponse<GetPlayerGroupListResponse> groupList = m_steamWeb.GetUserGroupList(m_steamClient.SteamID);
+                    APIResponse<GetPlayerGroupListResponse> groupList = m_steamUserWebAPI.GetUserGroupList(m_steamClient.SteamID);
 
                     SteamID groupID = m_steamFriendsHelper.GetGroupID(Convert.ToUInt32(groupList.Response.GroupIDs[0].GroupID));
 
-                    m_steamWeb.InviteToGroup(groupID.ToString(), friend.SteamID.ConvertToUInt64().ToString());
+                    m_steamUserWebAPI.InviteToGroup(groupID.ToString(), friend.SteamID.ConvertToUInt64().ToString());
 
                     m_steamFriends.SendChatMessage(friend.SteamID, EChatEntryType.ChatMsg, "Hello and welcome to my Service!\rI've invited you to my group, where you can check the other bots or get to learn and trade with other steamusers.");
                 }
