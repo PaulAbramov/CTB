@@ -30,7 +30,7 @@ namespace CTB.HelperClasses
         {
             m_mobileHelper = _mobileHelper;
             m_steamWeb = _steamWeb;
-            m_tradeOfferWebAPI = new TradeOfferWebAPI(_steamWeb, _botInfo.APIKey);
+            m_tradeOfferWebAPI = new TradeOfferWebAPI(_steamWeb);
             m_botInfo = _botInfo;
         }
 
@@ -285,6 +285,12 @@ namespace CTB.HelperClasses
                 if(m_botInfo.Accept1on1Trades && !shouldAcceptTrade)
                 {
                     shouldAcceptTrade = CheckForOneOnOneCardTrade(ourItems, theirItems).Count == ourItemsCount;
+                }
+
+                if (_tradeOffer.ItemsToGive.Count > ourItems.Count)
+                {
+                    m_tradeOfferWebAPI.DeclineTradeoffer(_tradeOffer.TradeOfferID, _partnerID);
+                    return false;
                 }
 
                 if (shouldAcceptTrade)

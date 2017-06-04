@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
 using CTB.HelperClasses;
@@ -25,8 +26,9 @@ namespace CTB
 
         private readonly SteamWeb m_steamWeb;
         private readonly TradeOfferHelperClass m_tradeOfferHelper;
-        private readonly SteamUserWebAPI m_steamUserWebAPI;
+        private readonly CardFarmHelperClass m_cardFarmHelper;
         private readonly SteamFriendsHelper m_steamFriendsHelper;
+        private readonly SteamUserWebAPI m_steamUserWebAPI;
         private readonly MobileHelper m_mobileHelper;
 
         private string m_webAPIUserNonce;
@@ -76,14 +78,16 @@ namespace CTB
             {
                 Username = _botInfo.Username,
                 Password = _botInfo.Password,
+                LoginID = 20,
                 ShouldRememberPassword = true
             };
 
             m_steamWeb = new SteamWeb(_botInfo.APIKey);
             m_mobileHelper = new MobileHelper();
             m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, m_steamWeb, _botInfo);
-            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
             m_steamFriendsHelper = new SteamFriendsHelper();
+            m_cardFarmHelper = new CardFarmHelperClass(m_steamWeb);
+            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
         }
 
         /// <summary>
@@ -176,6 +180,9 @@ namespace CTB
 
                         m_tradeOfferHelper.StartCheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
                     }
+
+                    m_cardFarmHelper.StartFarmCards(m_steamClient);
+
                     break;
                case EResult.AccountLogonDenied:
                     Console.WriteLine("Enter the auth code sent to the email at {0}: ", _callback.EmailDomain);
@@ -216,6 +223,10 @@ namespace CTB
                         m_steamUserLogonDetails.TwoFactorCode = twoFactorCode;
                         Console.WriteLine("2FA-Code was generated.");
                     }
+                    break;
+                case EResult.RateLimitExceeded:
+                    Console.WriteLine("Account timeout, wait 5 mins and then try again to login.");
+                    Thread.Sleep(TimeSpan.FromMinutes(5));
                     break;
 
                 default:
@@ -314,6 +325,7 @@ namespace CTB
             Console.WriteLine("Logged off of Steam: {0}", _callback.Result);
 
             m_tradeOfferHelper.StopCheckForTradeOffers();
+            m_cardFarmHelper.StopCheckFarmCards();
         }
 
         /// <summary>
@@ -327,6 +339,7 @@ namespace CTB
             Console.WriteLine("Disconnected from Steam, try to connect again in 5 seconds!");
 
             m_tradeOfferHelper.StopCheckForTradeOffers();
+            m_cardFarmHelper.StopCheckFarmCards();
 
             Thread.Sleep(TimeSpan.FromSeconds(5));
 

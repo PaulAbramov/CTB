@@ -484,7 +484,7 @@ namespace CTB.Web.TradeOffer
             Match ourMatch = Regex.Match(response, @"g_daysMyEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);
             Match theirMatch = Regex.Match(response, @"g_daysTheirEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);
 
-            // TODO catch the tradeoffer it takes too long to accept, will cause error here
+            // TODO catch the tradeoffer, if it takes too long to accept, will cause error here
             try
             {
                 if (!ourMatch.Groups["days"].Success || !theirMatch.Groups["days"].Success)

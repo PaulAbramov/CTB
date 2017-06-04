@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -57,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
+    <Compile Include="HelperClasses\CardFarmHelperClass.cs" />
     <Compile Include="HelperClasses\MobileHelper.cs" />
     <Compile Include="HelperClasses\SteamFriendsHelper.cs" />
     <Compile Include="HelperClasses\TradeOfferHelperClass.cs" />
@@ -67,6 +71,7 @@
     <Compile Include="Web\JsonClasses\GetPlayerGroupListResponse.cs" />
     <Compile Include="Web\JsonClasses\GetPlayerSummariesResponse.cs" />
     <Compile Include="Web\JsonClasses\GetPlayerSummary.cs" />
+    <Compile Include="Web\SteamUser\JsonClasses\GameToFarm.cs" />
     <Compile Include="Web\SteamUser\SteamUserWebAPI.cs" />
     <Compile Include="Web\SteamWeb.cs" />
     <Compile Include="Web\TradeOffer\JsonClasses\DescriptionInItemsDescription.cs" />

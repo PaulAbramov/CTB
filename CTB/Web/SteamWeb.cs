@@ -18,7 +18,7 @@ namespace CTB.Web
         private SteamClient m_steamClient;
         private string m_webAPIUserNonce;
 
-        private const string steamCommunityHost = "steamcommunity.com";
+        public readonly string m_SteamCommunityHost = "steamcommunity.com";
         public readonly string m_APISteamAddress = "http://api.steampowered.com/{0}/{1}/{2}";
         
 
@@ -39,12 +39,14 @@ namespace CTB.Web
         /// <returns></returns>
         public bool RefreshSessionIfNeeded()
         {
-            string response = m_WebHelper.GetStringFromRequest("http://steamcommunity.com/");
+            string response = m_WebHelper.GetStringFromRequest("http://steamcommunity.com/my/");
 
-            Match isLoggedOn = Regex.Match(response, @"profiles\/[\d]+\/friends", RegexOptions.IgnoreCase);
+            bool isNotLoggedOn = response.Contains("Sign In");
 
-            if (!isLoggedOn.Success)
+            if (isNotLoggedOn)
             {
+                Console.WriteLine("Reauthenticating...");
+
                 return AuthenticateUser(m_steamClient, m_webAPIUserNonce);
             }
             else
@@ -115,9 +117,9 @@ namespace CTB.Web
                 SteamLogin = authResult["token"].Value;
                 SteamLoginSecure = authResult["tokensecure"].Value;
 
-                m_WebHelper.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, steamCommunityHost));
-                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, steamCommunityHost));
-                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, steamCommunityHost));
+                m_WebHelper.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamCommunityHost));
+                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamCommunityHost));
+                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamCommunityHost));
 
                 return true;
             }
