@@ -259,8 +259,6 @@ namespace CTB.Web.TradeOffer
 
             string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url, data, false);
 
-            dynamic json = JsonConvert.DeserializeObject(response);
-
             return true;
         }
 

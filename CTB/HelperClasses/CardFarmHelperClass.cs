@@ -104,11 +104,7 @@ namespace CTB.HelperClasses
             }
             catch (Exception exception)
             {
-                if (exception.GetType() == typeof(ObjectDisposedException))
-                {
-                    return;
-                }
-                else
+                if (exception.GetType() != typeof(ObjectDisposedException))
                 {
                     Console.WriteLine(exception);
                     throw;

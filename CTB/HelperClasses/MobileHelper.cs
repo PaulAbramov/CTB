@@ -61,16 +61,18 @@ namespace CTB.HelperClasses
 
                 Confirmation[] confirmations = m_steamGuardAccount.FetchConfirmations();
 
-                if (confirmations == null)
+                if (confirmations != null)
+                {
+                    foreach (Confirmation confirmation in confirmations)
+                    {
+                        bool confirmedTrade = m_steamGuardAccount.AcceptConfirmation(confirmation);
+
+                        Console.WriteLine(confirmedTrade ? "Confirmed {0}, (Confirmation ID #{1})" : "Could not confirm {0}, (Confirmation ID #{1})", confirmation.Description, confirmation.ID);
+                    }
+                }
+                else
                 {
                     Console.WriteLine("Mobilehelper: Must Login");
-                }
-
-                foreach (Confirmation confirmation in confirmations)
-                {
-                    bool confirmedTrade = m_steamGuardAccount.AcceptConfirmation(confirmation);
-
-                    Console.WriteLine(confirmedTrade ? "Confirmed {0}, (Confirmation ID #{1})" : "Could not confirm {0}, (Confirmation ID #{1})", confirmation.Description, confirmation.ID);
                 }
             }
         }

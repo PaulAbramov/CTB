@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using SteamKit2;
 
 namespace CTB.HelperClasses
