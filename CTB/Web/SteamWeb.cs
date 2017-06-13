@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using SteamKit2;
 
 namespace CTB.Web
@@ -16,18 +16,20 @@ namespace CTB.Web
         public readonly string m_APIKey;
 
         private SteamClient m_steamClient;
-        private string m_webAPIUserNonce;
 
+        private readonly SteamUser m_steamUser;
         public readonly string m_SteamCommunityHost = "steamcommunity.com";
         public readonly string m_APISteamAddress = "http://api.steampowered.com/{0}/{1}/{2}";
-        
+
 
         /// <summary>
         /// Initialize the SteamWeb object with the apikey
         /// </summary>
+        /// <param name="_steamUser"></param>
         /// <param name="_apiKey"></param>
-        public SteamWeb(string _apiKey)
+        public SteamWeb(SteamUser _steamUser, string _apiKey)
         {
+            m_steamUser = _steamUser;
             m_APIKey = _apiKey;
         }
 
@@ -35,9 +37,10 @@ namespace CTB.Web
         /// Send a request to the homepage of steam, check if there is something with "profiles/OurSteamID64/friends"
         /// If there is such a content inside the string, then we are still authenticated return true, so we know we are loggedon
         /// If there is not such a content inside the string, then we are not authenticated and try to authenticate to the web again
+        /// To authenticate we have to request a new nonce, which will be needed to authenticate
         /// </summary>
         /// <returns></returns>
-        public bool RefreshSessionIfNeeded()
+        public async Task<bool> RefreshSessionIfNeeded()
         {
             string response = m_WebHelper.GetStringFromRequest("http://steamcommunity.com/my/");
 
@@ -45,9 +48,26 @@ namespace CTB.Web
 
             if (isNotLoggedOn)
             {
+                SteamUser.WebAPIUserNonceCallback userNonceCallback;
+
+                try
+                {
+                    userNonceCallback = await m_steamUser.RequestWebAPIUserNonce();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(userNonceCallback?.Nonce))
+                {
+                    Console.WriteLine("Usernonce is empty");
+                }
+
                 Console.WriteLine("Reauthenticating...");
 
-                return AuthenticateUser(m_steamClient, m_webAPIUserNonce);
+                return AuthenticateUser(m_steamClient, userNonceCallback?.Nonce);
             }
             else
             {
@@ -61,7 +81,6 @@ namespace CTB.Web
         public bool AuthenticateUser(SteamClient _steamClient, string _webAPIUserNonce )
         {
             m_steamClient = _steamClient;
-            m_webAPIUserNonce = _webAPIUserNonce;
 
             // Get the interface for the authentication of the steamuser
             using (dynamic authenticator = WebAPI.GetInterface("ISteamUserAuth"))
@@ -116,6 +135,11 @@ namespace CTB.Web
                 // Set the cookies
                 SteamLogin = authResult["token"].Value;
                 SteamLoginSecure = authResult["tokensecure"].Value;
+
+                // Create a new instance of the cookieContainer
+                // After loosing connection a second m_domainTable will be created, holding the sessionID from the time we were not authenticated
+                // This will lead to inactive session while requesting API/WebCalls
+                m_WebHelper.m_CookieContainer = new CookieContainer();
 
                 m_WebHelper.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamCommunityHost));
                 m_WebHelper.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamCommunityHost));

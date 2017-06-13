@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CTB.Web;
-using CTB.Web.SteamUser;
-using CTB.Web.SteamUser.JsonClasses;
+using CTB.Web.SteamUserWeb;
+using CTB.Web.SteamUserWeb.JsonClasses;
 using SteamKit2;
 using SteamKit2.Internal;
 
@@ -53,11 +53,11 @@ namespace CTB.HelperClasses
             {
                 while(!m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    m_steamWeb.RefreshSessionIfNeeded();
+                    await m_steamWeb.RefreshSessionIfNeeded();
 
                     List<GameToFarm> gamesToFarm = m_steamUserWebAPI.GetBadgesToFarm();
 
-                    bool isRunning = (gamesToFarm.Count > 0) ? true : false;
+                    bool isRunning = (gamesToFarm.Count > 0);
 
                     if(!isRunning)
                     {
@@ -70,7 +70,7 @@ namespace CTB.HelperClasses
 
                         await Task.Delay(TimeSpan.FromMinutes(5));
 
-                        m_steamWeb.RefreshSessionIfNeeded();
+                        await m_steamWeb.RefreshSessionIfNeeded();
 
                         isRunning = m_steamUserWebAPI.GetGameCardsRemainingForGame(Convert.ToUInt32(gamesToFarm.First().AppID)) > 0;
 

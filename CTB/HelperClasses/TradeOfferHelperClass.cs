@@ -51,7 +51,7 @@ namespace CTB.HelperClasses
             {
                 while(!m_tradeOfferCancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    CheckForTradeOffers(_steamFriendsHelper, _steamID);
+                    await CheckForTradeOffers(_steamFriendsHelper, _steamID);
 
                     await Task.Delay(TimeSpan.FromSeconds(2));
                 }
@@ -100,7 +100,7 @@ namespace CTB.HelperClasses
         /// </summary>
         /// <param name="_steamFriendsHelper"></param>
         /// <param name="_steamID"></param>
-        public void CheckForTradeOffers(SteamFriendsHelper _steamFriendsHelper, SteamID _steamID)
+        public async Task CheckForTradeOffers(SteamFriendsHelper _steamFriendsHelper, SteamID _steamID)
         {
             TradeOffersSummaryResponse tradeOfferCountToHandle = m_tradeOfferWebAPI.GetTradeOffersSummary();
             int tradeOfferHandledCounter = 0;
@@ -130,7 +130,7 @@ namespace CTB.HelperClasses
                     }
 
                     //  If we were not logged on to the web or the authentication failed, go to the next tradeoffer and check it again
-                    if(!m_steamWeb.RefreshSessionIfNeeded())
+                    if(! await m_steamWeb.RefreshSessionIfNeeded())
                     {
                         continue;
                     }

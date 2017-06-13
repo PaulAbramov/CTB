@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using CTB.Web.JsonClasses;
-using CTB.Web.SteamUser.JsonClasses;
+using CTB.Web.SteamUserWeb.JsonClasses;
 using CTB.Web.TradeOffer;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using SteamKit2;
 
-namespace CTB.Web.SteamUser
+namespace CTB.Web.SteamUserWeb
 {
     public class SteamUserWebAPI
     {

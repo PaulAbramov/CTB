@@ -1,4 +1,4 @@
-﻿namespace CTB.Web.SteamUser.JsonClasses
+﻿namespace CTB.Web.SteamUserWeb.JsonClasses
 {
     public class GameToFarm
     {

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
 using CTB.HelperClasses;
 using CTB.JsonClasses;
 using CTB.Web.JsonClasses;
-using CTB.Web.SteamUser;
+using CTB.Web.SteamUserWeb;
 using CTB.Web.TradeOffer;
 using SteamAuth;
 using SteamKit2;
@@ -82,7 +81,7 @@ namespace CTB
                 ShouldRememberPassword = true
             };
 
-            m_steamWeb = new SteamWeb(_botInfo.APIKey);
+            m_steamWeb = new SteamWeb(m_steamUser, _botInfo.APIKey);
             m_mobileHelper = new MobileHelper();
             m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, m_steamWeb, _botInfo);
             m_steamFriendsHelper = new SteamFriendsHelper();

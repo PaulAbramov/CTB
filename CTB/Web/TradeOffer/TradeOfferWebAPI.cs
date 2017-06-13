@@ -65,21 +65,10 @@ namespace CTB.Web.TradeOffer
                 APIResponse<GetOffersResponse> offersResponse = JsonConvert.DeserializeObject<APIResponse<GetOffersResponse>>(response);
                 return offersResponse.Response;
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                if (exception.Message.Contains("Unexpected"))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Error retrieving GetTradeOffers, try again later");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                else
-                {
-                    Console.WriteLine("GetTradeOffers error : " + exception.Message);
-                }
+                return new GetOffersResponse();
             }
-
-            return new GetOffersResponse();
         }
 
 #region Some functions to simplify the handling of the bot
@@ -140,21 +129,10 @@ namespace CTB.Web.TradeOffer
 
                 return offerResponse.Response;
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                if (exception.Message.Contains("Unexpected"))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Error retrieving GetTradeOffer, try again later");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                else
-                {
-                    Console.WriteLine("GetTradeOffer error : " + exception.Message);
-                }
+                return new GetOfferResponse();
             }
-
-            return new GetOfferResponse();
         }
 
         /// <summary>
@@ -178,21 +156,10 @@ namespace CTB.Web.TradeOffer
 
                 return tradeOffersSummaryResponse.Response;
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                if (exception.Message.Contains("Unexpected"))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Error retrieving TradeOffersSummary, try again later");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                else
-                {
-                    Console.WriteLine("TradeOffersSummary error : " + exception.Message);
-                }
+                return new TradeOffersSummaryResponse();
             }
-
-            return new TradeOffersSummaryResponse();
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ namespace CTB.Web
 {
     public class WebHelper
     {
-        public CookieContainer m_CookieContainer = new CookieContainer();
+        public CookieContainer m_CookieContainer;
 
         /// <summary>
         /// Get the response for the given url and data
