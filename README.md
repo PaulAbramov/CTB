@@ -1,7 +1,7 @@
 # CTB
 
-[![Steam Donate](https://img.shields.io/badge/Steam-donate-yellow.svg)](https://steamcommunity.com/tradeoffer/new/?partner=40214091&token=_qILz8Ah)
-[![Steam Group](https://img.shields.io/badge/Steam-group-yellowgreen.svg)](https://steamcommunity.com/groups/xtstc)
+[![Steam Donate](https://img.shields.io/badge/steam-donate-red.svg?colorA=000000&colorB=FF0000)](https://steamcommunity.com/tradeoffer/new/?partner=40214091&token=_qILz8Ah)
+[![Steam Group](https://img.shields.io/badge/steam-group-red.svg?colorA=000000&colorB=FF0000)](https://steamcommunity.com/groups/xtstc)
 
 ---
 
