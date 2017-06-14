@@ -24,6 +24,7 @@
         public bool AcceptEscrow         = false;
         public bool Accept1on1Trades     = true;
         public bool Accept1on2Trades     = true;
+        public string GroupToInviteTo    = "";
         public string[] Admins           = {""};
     }
 }

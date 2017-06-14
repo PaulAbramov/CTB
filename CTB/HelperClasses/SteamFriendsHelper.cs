@@ -117,7 +117,10 @@ namespace CTB.HelperClasses
 
         /// <summary>
         /// Add the user to the friendslist
-        /// Invite the user to our group and the group passed by the user
+        /// Invite the user to our group and the group passed by the admin
+        /// Allowed string passed by admin: group url, groupID32 and groupID64, groupID64 is prefered because of error measures
+        /// If a url is passed, so get the groupID64 from the grouppage
+        /// groupID32 will be converted into a groupID64
         /// Welcome the user to the service and tell him we invited him to our Group
         /// </summary>
         /// <param name="_steamFriends"></param>
@@ -136,9 +139,19 @@ namespace CTB.HelperClasses
                     _steamUserWebAPI.InviteToGroup(groupID.ToString(), _friendSteamID.ConvertToUInt64().ToString());
                 }
 
-                if(!String.IsNullOrEmpty(_groupID))
+                if (!string.IsNullOrEmpty(_groupID))
                 {
-                    //TODO check if the ID is valid, maybe convert it and invite the user to this group
+                    string groupID64 = "";
+                    if (_groupID.Contains("steamcommunity") && _groupID.Contains("groups"))
+                    {
+                        groupID64 = _steamUserWebAPI.GetGroupIDFromGroupAdress(_groupID);
+                    }
+                    else
+                    {
+                        groupID64 = GetGroupID64String(_groupID);
+                    }
+
+                    _steamUserWebAPI.InviteToGroup(groupID64, _friendSteamID.ConvertToUInt64().ToString());
                 }
             }
 
@@ -154,6 +167,85 @@ namespace CTB.HelperClasses
         public void DeclineFriendRequest(SteamFriends _steamFriends, SteamID _friendID)
         {
             _steamFriends.RemoveFriend(_friendID);
+        }
+
+        /// <summary>
+        /// We want to try and parse the string into an unsigned long value
+        /// Ulong because it might be a ID64 which would be too big for an int and it is always used as an ulong inside steam
+        /// If it parsed without a problem it is a numeric
+        /// Which allows us to get the amount of digits in this number
+        /// If the number is equal to 18 it is a groupID64, so we just want to return it as a string
+        /// If the number doesn't equal to 18 it should be a groupID32, so we want to get the groupID64
+        /// Return the converted groupID64 as a sting
+        /// </summary>
+        /// <param name="_groupID"></param>
+        /// <returns></returns>
+        private string GetGroupID64String(string _groupID)
+        {
+            ulong groupID64Or32;
+            bool isNumeric = ulong.TryParse(_groupID, out groupID64Or32);
+
+            if (isNumeric)
+            {
+                //  Safe way be cause we can the amount of digits in a number without casting it to a string
+                //  var amountOfDigits = GetAmountOfDigits(groupID64Or32);
+
+                //  We have checked if it is a numeric, so we can just get the digit amount of the string we have parsed
+                if (_groupID.Length == 18)
+                {
+                    return groupID64Or32.ToString();
+                }
+                else
+                {
+                    SteamID groupID64SteamID = GetGroupID(Convert.ToUInt32(groupID64Or32));
+                    return groupID64SteamID.ConvertToUInt64().ToString();
+                }
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// SAFE WAY TO GET A DIGITAMOUNT OF A NUMBER
+        /// BECAUSE WE ARE NOT CASTING TO A STRING
+        /// 
+        /// We Want to get the amount of digits in the number
+        /// 
+        /// Therefore we are going to use logarithm of 10 on the passed number
+        /// 
+        /// our groupID64: 103582791458407475
+        /// 
+        /// 10                        1 time
+        /// 100                       2 times
+        /// 1000                      3 times
+        /// 10000                     4 times
+        /// 100000                    5 times
+        /// 1000000                   6 times
+        /// 10000000                  7 times
+        /// 100000000                 8 times
+        /// 1000000000                9 times
+        /// 10000000000               10times
+        /// 100000000000              11times
+        /// 1000000000000             12times
+        /// 10000000000000            13times
+        /// 100000000000000           14times
+        /// 1000000000000000          15times
+        /// 10000000000000000         16times
+        /// 100000000000000000        17times
+        /// 103582791458407475
+        /// 
+        /// So the result will be 17, but we started with a 10, which includes 2 digits
+        /// Therefore we are going to increase the result by one so we get 18 digits
+        /// GroupID64 and SteamID64 are always 18 digits long
+        /// 
+        /// Because we are using log10 on our groupID64 our result will be a floating number like 18,01528...
+        /// Use Math.floor to round the result to 18, cast it to an unsigned it and return it
+        /// </summary>
+        /// <param name="_number"></param>
+        /// <returns></returns>
+        private static uint GetAmountOfDigits(ulong _number)
+        {
+            return Convert.ToUInt32(Math.Floor(Math.Log10(_number) + 1));
         }
     }
 }

@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
+using System.Xml;
 using CTB.Web.JsonClasses;
 using CTB.Web.SteamUserWeb.JsonClasses;
 using CTB.Web.TradeOffer;
@@ -82,6 +83,26 @@ namespace CTB.Web.SteamUserWeb
             APIResponse<GetPlayerGroupListResponse> summary = JsonConvert.DeserializeObject<APIResponse<GetPlayerGroupListResponse>>(response);
 
             return summary;
+        }
+
+        /// <summary>
+        /// Extend the groupurl by the string to get a XML overview of the groupdata
+        /// Parse the content into a XMLDocument
+        /// Select the root node
+        /// Get the Text from the first child node which is the groupID64 and return it
+        /// </summary>
+        /// <param name="_url"></param>
+        /// <returns></returns>
+        public string GetGroupIDFromGroupAdress(string _url)
+        {
+            string response = m_steamWeb.m_WebHelper.GetStringFromRequest(_url + "/memberslistxml/?xml=1");
+
+            XmlDocument groupXML = new XmlDocument();
+            groupXML.LoadXml(response);
+
+            XmlNode groupID64Node = groupXML.SelectSingleNode("/memberList");
+
+            return groupID64Node?.FirstChild.InnerText;
         }
 
         /// <summary>

@@ -48,6 +48,7 @@ namespace CTB
 
         private readonly bool m_neededInfosAreGiven;
         private readonly string m_botName;
+        private readonly string m_adminGroupToInviteTo;
         private readonly string[] m_admins;
 
         /// <summary>
@@ -90,6 +91,7 @@ namespace CTB
             m_botName = _botInfo.BotName;
             m_admins = _botInfo.Admins;
             m_acceptFriendRequests = _botInfo.AcceptFriendRequests;
+            m_adminGroupToInviteTo = _botInfo.GroupToInviteTo;
 
             m_steamUserLogonDetails = new SteamUser.LogOnDetails
             {
@@ -305,7 +307,7 @@ namespace CTB
         /// Callback will be called if our friendslist is successfully loaded
         /// Set our state to online and change our name to the name inside the config
         /// 
-        /// Check if we have any friendrequests, if we have some, accept or decline them
+        /// Check if we have any friendrequests, if we have some, accept and invite the user to our group or decline them
         /// </summary>
         /// <param name="_callback"></param>
         private void OnLoadedFriendsList(SteamFriends.FriendsListCallback _callback)
@@ -317,14 +319,13 @@ namespace CTB
                 m_steamFriends.SetPersonaName(m_botName);
             }
 
-            foreach(SteamFriends.FriendsListCallback.Friend friend in _callback.FriendList)
+            foreach (SteamFriends.FriendsListCallback.Friend friend in _callback.FriendList)
             {
                 if(friend.Relationship == EFriendRelationship.RequestRecipient)
                 {
                     if(m_acceptFriendRequests)
                     {
-                        // TODO pass the groupID here
-                        m_steamFriendsHelper.AcceptFriendRequestAndInviteToGroup(m_steamFriends, friend.SteamID,  m_steamUserWebAPI);
+                        m_steamFriendsHelper.AcceptFriendRequestAndInviteToGroup(m_steamFriends, friend.SteamID,  m_steamUserWebAPI, m_adminGroupToInviteTo);
                     }
                     else
                     {
