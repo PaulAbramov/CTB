@@ -61,6 +61,8 @@
   <ItemGroup>
     <Compile Include="Bot.cs" />
     <Compile Include="HelperClasses\CardFarmHelperClass.cs" />
+    <Compile Include="HelperClasses\ChatHandler.cs" />
+    <Compile Include="HelperClasses\GamesLibraryHelperClass.cs" />
     <Compile Include="HelperClasses\MobileHelper.cs" />
     <Compile Include="HelperClasses\SteamFriendsHelper.cs" />
     <Compile Include="HelperClasses\TradeOfferHelperClass.cs" />

@@ -1,12 +1,24 @@
-﻿using System;
+﻿/*
+
+___    ___  ______   ________    __       ______
+\  \  /  / |   ___| |__    __|  /  \     |   ___|
+ \  \/  /  |  |___     |  |    / /\ \    |  |__
+  |    |   |   ___|    |  |   /  __  \    \__  \
+ /	/\  \  |  |___     |  |  /  /  \  \   ___|  |
+/__/  \__\ |______|    |__| /__/    \__\ |______|
+
+Written by Paul "Xetas" Abramov
+
+
+*/
+
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using CTB.HelperClasses;
 using CTB.JsonClasses;
-using CTB.Web.JsonClasses;
 using CTB.Web.SteamUserWeb;
-using CTB.Web.TradeOffer;
 using SteamAuth;
 using SteamKit2;
 using SteamWeb = CTB.Web.SteamWeb;
@@ -29,11 +41,14 @@ namespace CTB
         private readonly SteamFriendsHelper m_steamFriendsHelper;
         private readonly SteamUserWebAPI m_steamUserWebAPI;
         private readonly MobileHelper m_mobileHelper;
+        private readonly ChatHandler m_chatHandler;
 
         private string m_webAPIUserNonce;
+        private bool m_acceptFriendRequests;
 
         private readonly bool m_neededInfosAreGiven;
         private readonly string m_botName;
+        private readonly string[] m_admins;
 
         /// <summary>
         /// initialize the Bot
@@ -65,6 +80,7 @@ namespace CTB
 
             #region SteamFriends Callbacks
             m_callbackManager.Subscribe<SteamFriends.FriendsListCallback>(OnLoadedFriendsList);
+            m_callbackManager.Subscribe<SteamFriends.FriendMsgCallback>(OnMessageReceive);
             #endregion
             #endregion
 
@@ -72,6 +88,8 @@ namespace CTB
             m_neededInfosAreGiven = CheckForNeededBotInfo(_botInfo);
 
             m_botName = _botInfo.BotName;
+            m_admins = _botInfo.Admins;
+            m_acceptFriendRequests = _botInfo.AcceptFriendRequests;
 
             m_steamUserLogonDetails = new SteamUser.LogOnDetails
             {
@@ -82,11 +100,12 @@ namespace CTB
             };
 
             m_steamWeb = new SteamWeb(m_steamUser, _botInfo.APIKey);
+            m_chatHandler = new ChatHandler();
             m_mobileHelper = new MobileHelper();
             m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, m_steamWeb, _botInfo);
-            m_steamFriendsHelper = new SteamFriendsHelper();
-            m_cardFarmHelper = new CardFarmHelperClass(m_steamWeb);
             m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
+            m_cardFarmHelper = new CardFarmHelperClass(m_steamWeb);
+            m_steamFriendsHelper = new SteamFriendsHelper();
         }
 
         /// <summary>
@@ -286,7 +305,7 @@ namespace CTB
         /// Callback will be called if our friendslist is successfully loaded
         /// Set our state to online and change our name to the name inside the config
         /// 
-        /// Check if we have any friendrequests, if we have some, accept them and invite them to our main group
+        /// Check if we have any friendrequests, if we have some, accept or decline them
         /// </summary>
         /// <param name="_callback"></param>
         private void OnLoadedFriendsList(SteamFriends.FriendsListCallback _callback)
@@ -302,15 +321,64 @@ namespace CTB
             {
                 if(friend.Relationship == EFriendRelationship.RequestRecipient)
                 {
-                    m_steamFriends.AddFriend(friend.SteamID);
+                    if(m_acceptFriendRequests)
+                    {
+                        // TODO pass the groupID here
+                        m_steamFriendsHelper.AcceptFriendRequestAndInviteToGroup(m_steamFriends, friend.SteamID,  m_steamUserWebAPI);
+                    }
+                    else
+                    {
+                        m_steamFriendsHelper.DeclineFriendRequest(m_steamFriends, friend.SteamID);
+                    }
+                }
+            }
+        }
 
-                    APIResponse<GetPlayerGroupListResponse> groupList = m_steamUserWebAPI.GetUserGroupList(m_steamClient.SteamID);
+        /// <summary>
+        /// Check if we have received a chatmessage
+        /// If the message starts with a exclamation mark, it is a command
+        /// If the commnad has multiple arguments split them so we can check them easier
+        /// Check if the user who send the command is an admin, because we want to let normal steamusers use commands on our bot
+        /// Check the first argument which string it does equal to
+        /// </summary>
+        /// <param name="_callback"></param>
+        private void OnMessageReceive(SteamFriends.FriendMsgCallback _callback)
+        {
+            if(_callback.EntryType == EChatEntryType.ChatMsg)
+            {
+                if (_callback.Message.StartsWith("!"))
+                {
+                    string[] arguments = _callback.Message.Split(' ');
 
-                    SteamID groupID = m_steamFriendsHelper.GetGroupID(Convert.ToUInt32(groupList.Response.GroupIDs[0].GroupID));
-
-                    m_steamUserWebAPI.InviteToGroup(groupID.ToString(), friend.SteamID.ConvertToUInt64().ToString());
-
-                    m_steamFriends.SendChatMessage(friend.SteamID, EChatEntryType.ChatMsg, "Hello and welcome to my Service!\rI've invited you to my group, where you can check the other bots or get to learn and trade with other steamusers.");
+                    if (m_steamFriendsHelper.IsBotAdmin(_callback.Sender, m_admins))
+                    {
+                        switch (arguments[0].ToUpper())
+                        {
+                            //  Show the admin commands 
+                            case "!C":
+                            case "!COMMANDS":
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, m_chatHandler.GetChatCommandsAdmin());
+                                break;
+                            //  Print out the current 2FA authcode
+                            case "!GC":
+                            case "GENERATECODE":
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, m_mobileHelper.GetMobileAuthCode(m_steamUserLogonDetails.Username));
+                                break;
+                            //  Redeem a steam game key
+                            case "!R":
+                            case "!REDEEM":
+                                break;
+                            //  Set the permission to accept or decline friendrequests
+                            case "!AFR":
+                            case "!ACCEPTFRIENDREQUESTS":
+                                m_acceptFriendRequests = m_steamFriendsHelper.SetPermissionAcceptFriendRequests(m_steamFriends, _callback, m_acceptFriendRequests);
+                                break;
+                            //  Print a message to the user/admin if the command doesn't equal to one here
+                            default:
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, "Unknown command use !C or !commands to check for commands.");
+                                break;
+                        }
+                    }
                 }
             }
         }

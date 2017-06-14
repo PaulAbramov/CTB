@@ -17,12 +17,13 @@
     {
         public string Username;
         public string Password;
-        public string APIKey           = "";
-        public string BotName          = "";
-        public bool AcceptDonations    = true;
-        public bool AcceptEscrow       = false;
-        public bool Accept1on1Trades   = true;
-        public bool Accept1on2Trades   = true;
-        public string[] Admins         = {""};
+        public string APIKey             = "";
+        public string BotName            = "";
+        public bool AcceptFriendRequests = true;
+        public bool AcceptDonations      = true;
+        public bool AcceptEscrow         = false;
+        public bool Accept1on1Trades     = true;
+        public bool Accept1on2Trades     = true;
+        public string[] Admins           = {""};
     }
 }

@@ -1,4 +1,18 @@
-﻿using System;
+﻿/*
+
+___    ___  ______   ________    __       ______
+\  \  /  / |   ___| |__    __|  /  \     |   ___|
+ \  \/  /  |  |___     |  |    / /\ \    |  |__
+  |    |   |   ___|    |  |   /  __  \    \__  \
+ /	/\  \  |  |___     |  |  /  /  \  \   ___|  |
+/__/  \__\ |______|    |__| /__/    \__\ |______|
+
+Written by Paul "Xetas" Abramov
+
+
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -7,7 +21,6 @@ using CTB.Web;
 using CTB.Web.SteamUserWeb;
 using CTB.Web.SteamUserWeb.JsonClasses;
 using SteamKit2;
-using SteamKit2.Internal;
 
 namespace CTB.HelperClasses
 {
@@ -15,6 +28,7 @@ namespace CTB.HelperClasses
     {
         private readonly SteamUserWebAPI m_steamUserWebAPI;
         private readonly SteamWeb m_steamWeb;
+        private readonly GamesLibraryHelperClass m_gamesLibraryHelper;
 
         private CancellationTokenSource m_cardFarmCancellationTokenSource;
 
@@ -27,6 +41,8 @@ namespace CTB.HelperClasses
             m_steamWeb = _steamWeb;
 
             m_steamUserWebAPI = new SteamUserWebAPI(_steamWeb);
+
+            m_gamesLibraryHelper = new GamesLibraryHelperClass();
         }
 
         /// <summary>
@@ -61,12 +77,12 @@ namespace CTB.HelperClasses
 
                     if(!isRunning)
                     {
-                        SetGamePlaying(0, _steamClient);
+                        m_gamesLibraryHelper.SetGamePlaying(0, _steamClient);
                     }
 
                     while(isRunning && !m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
                     {
-                        SetGamePlaying(Convert.ToInt32(gamesToFarm.First().AppID), _steamClient);
+                        m_gamesLibraryHelper.SetGamePlaying(Convert.ToInt32(gamesToFarm.First().AppID), _steamClient);
 
                         await Task.Delay(TimeSpan.FromMinutes(5));
 
@@ -112,22 +128,6 @@ namespace CTB.HelperClasses
             }
         }
 
-        /// <summary>
-        /// Get a reference to protobufmessages of type "GamesPlayed"
-        /// Set the gameid in the reference to the given gameid parameter
-        /// Send the reference to steam
-        /// 
-        /// With this function we can idle for cards
-        /// </summary>
-        /// <param name="_gameID"></param>
-        /// <param name="_steamClient"></param>
-        private void SetGamePlaying(int _gameID, SteamClient _steamClient)
-        {
-            ClientMsgProtobuf<CMsgClientGamesPlayed> gamePlaying = new ClientMsgProtobuf<CMsgClientGamesPlayed>(EMsg.ClientGamesPlayed);
-
-            gamePlaying.Body.games_played.Add(new CMsgClientGamesPlayed.GamePlayed { game_id = new GameID(_gameID) });
-
-            _steamClient.Send(gamePlaying);
-        }
+        
     }
 }

@@ -1,4 +1,25 @@
-﻿using System.Linq;
+﻿/*
+
+___    ___  ______   ________    __       ______
+\  \  /  / |   ___| |__    __|  /  \     |   ___|
+ \  \/  /  |  |___     |  |    / /\ \    |  |__
+  |    |   |   ___|    |  |   /  __  \    \__  \
+ /	/\  \  |  |___     |  |  /  /  \  \   ___|  |
+/__/  \__\ |______|    |__| /__/    \__\ |______|
+
+Written by Paul "Xetas" Abramov
+
+
+*/
+
+using System;
+using System.IO;
+using System.Linq;
+using CTB.JsonClasses;
+using CTB.Web.JsonClasses;
+using CTB.Web.SteamUserWeb;
+using CTB.Web.TradeOffer;
+using Newtonsoft.Json;
 using SteamKit2;
 
 namespace CTB.HelperClasses
@@ -40,6 +61,99 @@ namespace CTB.HelperClasses
         public bool IsBotAdmin(SteamID _steamID, string[] _admins)
         {
             return _admins.Length > 0 && _admins.Any(_admin => _admin == _steamID.ConvertToUInt64().ToString());
+        }
+
+        /// <summary>
+        /// Change the permission to acceptfriendrequests in the config file for uses after a relogin
+        /// Give the admin a message so he knows everything worked out like it should
+        /// </summary>
+        /// <param name="_steamFriends"></param>
+        /// <param name="_callback"></param>
+        /// <param name="_acceptFriendRequests"></param>
+        /// <returns></returns>
+        public bool SetPermissionAcceptFriendRequests(SteamFriends _steamFriends, SteamFriends.FriendMsgCallback _callback, bool _acceptFriendRequests)
+        {
+            if(_acceptFriendRequests)
+            {
+                OverrideConfigAcceptFrienRequests(false);
+
+                _steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, "Not accepting friendrequests anymore.");
+                return false;
+            }
+            else
+            {
+                OverrideConfigAcceptFrienRequests(true);
+
+                _steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, "Accepting friendrequests again.");
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Load the config to not loose information
+        /// Set the bool to true or false in the config
+        /// Save the config with all information
+        /// </summary>
+        /// <param name="_acceptFriendRequests"></param>
+        private static void OverrideConfigAcceptFrienRequests(bool _acceptFriendRequests)
+        {
+            BotInfo botInfo = JsonConvert.DeserializeObject<BotInfo>(File.ReadAllText("Files/config.json"));
+            botInfo.AcceptFriendRequests = _acceptFriendRequests;
+            File.WriteAllText("Files/config.json", JsonConvert.SerializeObject(botInfo, Formatting.Indented));
+        }
+
+        /// <summary>
+        /// Add the user to the friendslist
+        /// Welcome the user to the service
+        /// </summary>
+        /// <param name="_steamFriends"></param>
+        /// <param name="_friendSteamID"></param>
+        public void AcceptFriendRequest(SteamFriends _steamFriends, SteamID _friendSteamID)
+        {
+            _steamFriends.AddFriend(_friendSteamID);
+
+            _steamFriends.SendChatMessage(_friendSteamID, EChatEntryType.ChatMsg, "Hello and welcome to my Service!");
+        }
+
+        /// <summary>
+        /// Add the user to the friendslist
+        /// Invite the user to our group and the group passed by the user
+        /// Welcome the user to the service and tell him we invited him to our Group
+        /// </summary>
+        /// <param name="_steamFriends"></param>
+        /// <param name="_friendSteamID"></param>
+        /// <param name="_groupID"></param>
+        /// <param name="_steamUserWebAPI"></param>
+        public void AcceptFriendRequestAndInviteToGroup(SteamFriends _steamFriends, SteamID _friendSteamID, SteamUserWebAPI _steamUserWebAPI, string _groupID = "")
+        {
+            _steamFriends.AddFriend(_friendSteamID);
+
+            for(int i = 0; i < _steamFriends.GetClanCount(); i++)
+            {
+                SteamID groupID = _steamFriends.GetClanByIndex(i);
+                if(groupID.ConvertToUInt64().Equals(103582791458407475) && _steamFriends.GetClanName(groupID).ToUpper().Contains("XETAS"))
+                {
+                    _steamUserWebAPI.InviteToGroup(groupID.ToString(), _friendSteamID.ConvertToUInt64().ToString());
+                }
+
+                if(!String.IsNullOrEmpty(_groupID))
+                {
+                    //TODO check if the ID is valid, maybe convert it and invite the user to this group
+                }
+            }
+
+            _steamFriends.SendChatMessage(_friendSteamID, EChatEntryType.ChatMsg, "Hello and welcome to my Service!\nI've invited you to my group, where you can check the other bots or get to learn and trade with other steamusers.");
+        }
+
+        /// <summary>
+        /// Remove the user from our list
+        /// Decline the friendsrequest
+        /// </summary>
+        /// <param name="_steamFriends"></param>
+        /// <param name="_friendID"></param>
+        public void DeclineFriendRequest(SteamFriends _steamFriends, SteamID _friendID)
+        {
+            _steamFriends.RemoveFriend(_friendID);
         }
     }
 }
