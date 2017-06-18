@@ -80,9 +80,9 @@ namespace CTB.Web.SteamUserWeb
 
             string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url, data);
 
-            APIResponse<GetPlayerGroupListResponse> summary = JsonConvert.DeserializeObject<APIResponse<GetPlayerGroupListResponse>>(response);
+            APIResponse<GetPlayerGroupListResponse> playerGroupList = JsonConvert.DeserializeObject<APIResponse<GetPlayerGroupListResponse>>(response);
 
-            return summary;
+            return playerGroupList;
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace CTB.Web.SteamUserWeb
 
             const string groupInviteURL = "https://steamcommunity.com/actions/GroupInvite";
 
-            m_steamWeb.m_WebHelper.GetStringFromRequest(groupInviteURL, data, false);
+            m_steamWeb.m_WebHelper.SendWebRequest(groupInviteURL, data, false);
         }
 
         /// <summary>
@@ -169,6 +169,11 @@ namespace CTB.Web.SteamUserWeb
             htmlDocument.LoadHtml(response);
 
             HtmlNodeCollection nodes = htmlDocument.DocumentNode.SelectNodes("//div[@class='badge_title_stats_content']");
+
+            if(nodes == null)
+            {
+                return gamesToFarm;
+            }
 
             foreach(HtmlNode node in nodes)
             {

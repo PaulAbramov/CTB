@@ -16,9 +16,7 @@ using System;
 using System.IO;
 using System.Linq;
 using CTB.JsonClasses;
-using CTB.Web.JsonClasses;
 using CTB.Web.SteamUserWeb;
-using CTB.Web.TradeOffer;
 using Newtonsoft.Json;
 using SteamKit2;
 
@@ -141,7 +139,7 @@ namespace CTB.HelperClasses
 
                 if (!string.IsNullOrEmpty(_groupID))
                 {
-                    string groupID64 = "";
+                    string groupID64;
                     if (_groupID.Contains("steamcommunity") && _groupID.Contains("groups"))
                     {
                         groupID64 = _steamUserWebAPI.GetGroupIDFromGroupAdress(_groupID);
@@ -215,23 +213,23 @@ namespace CTB.HelperClasses
         /// 
         /// our groupID64: 103582791458407475
         /// 
-        /// 10                        1 time
-        /// 100                       2 times
-        /// 1000                      3 times
-        /// 10000                     4 times
-        /// 100000                    5 times
-        /// 1000000                   6 times
-        /// 10000000                  7 times
-        /// 100000000                 8 times
-        /// 1000000000                9 times
-        /// 10000000000               10times
-        /// 100000000000              11times
-        /// 1000000000000             12times
-        /// 10000000000000            13times
-        /// 100000000000000           14times
-        /// 1000000000000000          15times
-        /// 10000000000000000         16times
-        /// 100000000000000000        17times
+        /// 10                        1 time    10
+        /// 100                       2 times   10^2
+        /// 1000                      3 times   10^3
+        /// 10000                     4 times   10^4
+        /// 100000                    5 times   10^5
+        /// 1000000                   6 times   10^6
+        /// 10000000                  7 times   10^7
+        /// 100000000                 8 times   10^8
+        /// 1000000000                9 times   10^9
+        /// 10000000000               10times   10^10
+        /// 100000000000              11times   10^11
+        /// 1000000000000             12times   10^12
+        /// 10000000000000            13times   10^13
+        /// 100000000000000           14times   10^14
+        /// 1000000000000000          15times   10^15
+        /// 10000000000000000         16times   10^16
+        /// 100000000000000000        17times   10^17
         /// 103582791458407475
         /// 
         /// So the result will be 17, but we started with a 10, which includes 2 digits

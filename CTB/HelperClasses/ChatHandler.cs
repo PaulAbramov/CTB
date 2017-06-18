@@ -12,12 +12,6 @@ Written by Paul "Xetas" Abramov
 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace CTB.HelperClasses
 {
     public class ChatHandler
