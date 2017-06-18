@@ -16,6 +16,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
+using CTB.CallbackMessages;
 using CTB.HelperClasses;
 using CTB.JsonClasses;
 using CTB.Web.SteamUserWeb;
@@ -42,6 +43,7 @@ namespace CTB
         private readonly SteamUserWebAPI m_steamUserWebAPI;
         private readonly MobileHelper m_mobileHelper;
         private readonly ChatHandler m_chatHandler;
+        private readonly GamesLibraryHelperClass m_gamesLibraryHelper;
 
         private string m_webAPIUserNonce;
         private bool m_acceptFriendRequests;
@@ -63,10 +65,6 @@ namespace CTB
             // CallbackManager, which handles all callbacks we are going to get from the client
             m_callbackManager = new CallbackManager(m_steamClient);
 
-            m_steamUser = m_steamClient.GetHandler<SteamUser>();
-
-            m_steamFriends = m_steamClient.GetHandler<SteamFriends>();
-
             #region Callbacks
             #region SteamClient Callbacks
             m_callbackManager.Subscribe<SteamClient.ConnectedCallback>(OnConnected);
@@ -74,14 +72,27 @@ namespace CTB
             #endregion
 
             #region SteamUser Callbacks
+            m_steamUser = m_steamClient.GetHandler<SteamUser>();
             m_callbackManager.Subscribe<SteamUser.LoggedOnCallback>(OnLoggedOn);
             m_callbackManager.Subscribe<SteamUser.UpdateMachineAuthCallback>(OnMachineAuth);
             m_callbackManager.Subscribe<SteamUser.LoggedOffCallback>(OnLoggedOff);
             #endregion
 
             #region SteamFriends Callbacks
+            m_steamFriends = m_steamClient.GetHandler<SteamFriends>();
             m_callbackManager.Subscribe<SteamFriends.FriendsListCallback>(OnLoadedFriendsList);
             m_callbackManager.Subscribe<SteamFriends.FriendMsgCallback>(OnMessageReceive);
+            #endregion
+
+            #region Custom Callbacks
+            // Initialize the gamesLibraryHelper object here, because it inherits from "ClientMsgHandler"
+            // We need the ClientMsgHandler to allow the callbackmanager to listen to our custom callbacks from steam
+            // Because we are handling the received answer from steam inside the gamesLibraryHelpers method "HandleMsg" add it as handler to the steamclient
+            // This sets internal the SteamClient so we do not have to pass the SteamClient to the methods we are using inside the Handler
+            // Internally we are posting the response as Callback, so the callbackmanager passes the callback to our function so we can handle it if we want to
+            m_gamesLibraryHelper = new GamesLibraryHelperClass();
+            m_steamClient.AddHandler(m_gamesLibraryHelper);
+            m_callbackManager.Subscribe<PurchaseResponseCallback>(OnPurchaseResponse);
             #endregion
             #endregion
 
@@ -106,7 +117,7 @@ namespace CTB
             m_mobileHelper = new MobileHelper();
             m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, m_steamWeb, _botInfo);
             m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
-            m_cardFarmHelper = new CardFarmHelperClass(m_steamWeb);
+            m_cardFarmHelper = new CardFarmHelperClass(m_steamWeb, m_gamesLibraryHelper);
             m_steamFriendsHelper = new SteamFriendsHelper();
         }
 
@@ -199,10 +210,8 @@ namespace CTB
                         Console.WriteLine("Successfully authenticated the user in the web.");
 
                         m_tradeOfferHelper.StartCheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
+                        m_cardFarmHelper.StartFarmCards(m_steamClient);
                     }
-
-                    m_cardFarmHelper.StartFarmCards(m_steamClient);
-
                     break;
                case EResult.AccountLogonDenied:
                     Console.WriteLine("Enter the auth code sent to the email at {0}: ", _callback.EmailDomain);
@@ -368,6 +377,8 @@ namespace CTB
                             //  Redeem a steam game key
                             case "!R":
                             case "!REDEEM":
+                                // TODO call this inside a helperfunction to create an answer if the key was successfully activated
+                                m_gamesLibraryHelper.RedeemKey(arguments[1]);
                                 break;
                             //  Set the permission to accept or decline friendrequests
                             case "!AFR":
@@ -382,6 +393,15 @@ namespace CTB
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Here we are able to do something if we get a response from steam for redeeming a key or buying a game
+        /// </summary>
+        /// <param name="_callback"></param>
+        private void OnPurchaseResponse(PurchaseResponseCallback _callback)
+        {
+
         }
 
         /// <summary>

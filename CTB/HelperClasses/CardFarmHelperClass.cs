@@ -36,13 +36,14 @@ namespace CTB.HelperClasses
         /// Constructor to initialize variables and the class
         /// </summary>
         /// <param name="_steamWeb"></param>
-        public CardFarmHelperClass(SteamWeb _steamWeb)
+        /// <param name="_gamesLibraryHelper"></param>
+        public CardFarmHelperClass(SteamWeb _steamWeb, GamesLibraryHelperClass _gamesLibraryHelper)
         {
             m_steamWeb = _steamWeb;
 
             m_steamUserWebAPI = new SteamUserWebAPI(_steamWeb);
 
-            m_gamesLibraryHelper = new GamesLibraryHelperClass();
+            m_gamesLibraryHelper = _gamesLibraryHelper;
         }
 
         /// <summary>
@@ -77,12 +78,12 @@ namespace CTB.HelperClasses
 
                     if(!isRunning)
                     {
-                        m_gamesLibraryHelper.SetGamePlaying(0, _steamClient);
+                        m_gamesLibraryHelper.SetGamePlaying(0);
                     }
 
                     while(isRunning && !m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
                     {
-                        m_gamesLibraryHelper.SetGamePlaying(Convert.ToInt32(gamesToFarm.First().AppID), _steamClient);
+                        m_gamesLibraryHelper.SetGamePlaying(Convert.ToInt32(gamesToFarm.First().AppID));
 
                         await Task.Delay(TimeSpan.FromMinutes(5));
 
