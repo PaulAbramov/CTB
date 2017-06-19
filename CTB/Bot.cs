@@ -112,7 +112,7 @@ namespace CTB
                 ShouldRememberPassword = true
             };
 
-            m_steamWeb = new SteamWeb(m_steamUser, _botInfo.APIKey);
+            m_steamWeb = new SteamWeb(m_steamUser);
             m_chatHandler = new ChatHandler();
             m_mobileHelper = new MobileHelper();
             m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, m_steamWeb, _botInfo);
@@ -208,6 +208,8 @@ namespace CTB
                     if (loggedon)
                     {
                         Console.WriteLine("Successfully authenticated the user in the web.");
+
+                        m_steamWeb.RequestAPiKey();
 
                         m_tradeOfferHelper.StartCheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
                         m_cardFarmHelper.StartFarmCards(m_steamClient);
@@ -448,11 +450,6 @@ namespace CTB
             if (string.IsNullOrEmpty(_botInfo.Password))
             {
                 Console.WriteLine("Password is not set in the config file, please set it!");
-                return false;
-            }
-            if (string.IsNullOrEmpty(_botInfo.APIKey))
-            {
-                Console.WriteLine("APIKey is not set in the config file, please set it!");
                 return false;
             }
 

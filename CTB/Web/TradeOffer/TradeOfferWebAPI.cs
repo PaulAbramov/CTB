@@ -61,7 +61,7 @@ namespace CTB.Web.TradeOffer
 
             NameValueCollection data = new NameValueCollection
             {
-                {"key", m_steamWeb.m_APIKey},
+                {"key", m_steamWeb.APIKey},
                 {"get_sent_offers", BoolToInt(_getSentOffers).ToString()},
                 {"get_received_offers", BoolToInt(_getReceivedOffers).ToString()},
                 {"get_descriptions", BoolToInt(_getDescription).ToString()},
@@ -128,7 +128,7 @@ namespace CTB.Web.TradeOffer
         {
             NameValueCollection data = new NameValueCollection
             {
-                {"key", m_steamWeb.m_APIKey},
+                {"key", m_steamWeb.APIKey},
                 {"tradeofferid", _tradeOfferID},
                 {"language", _language}
             };
@@ -157,7 +157,7 @@ namespace CTB.Web.TradeOffer
         {
             NameValueCollection data = new NameValueCollection
             {
-                {"key", m_steamWeb.m_APIKey}
+                {"key", m_steamWeb.APIKey}
             };
 
             string url = string.Format(m_steamWeb.m_APISteamAddress, IEconServiceInterface, "GetTradeOffersSummary", "v1");
@@ -265,7 +265,7 @@ namespace CTB.Web.TradeOffer
         {
             NameValueCollection data = new NameValueCollection
             {
-                { "key", m_steamWeb.m_APIKey },
+                { "key", m_steamWeb.APIKey },
                 { "tradeofferid", _tradeOfferID }
             };
 
@@ -330,7 +330,7 @@ namespace CTB.Web.TradeOffer
         public KeyValue GetTradeOffersInterface(bool _getSentOffers, bool _getReceivedOffers, bool _getDescription, bool _activeOnly, bool _historicalOnly)
         {
             // Reuqest the IEconService with our apikey
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.m_APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 // ALWAYS TRY to work with interfaces, because it could go wrong and destroy everything
                 try
@@ -359,7 +359,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public KeyValue GetTradeOfferInterface(int _tradeOfferID)
         {
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.m_APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 // ALWAYS TRY to work with interfaces, because it could go wrong and destroy everything
                 try
@@ -382,7 +382,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public KeyValue GetTradeOffersSummaryInterface()
         {
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.m_APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 try
                 {
@@ -404,7 +404,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public KeyValue DeclineTradeOfferInterface(int _tradeOfferID)
         {
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.m_APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 try
                 {
@@ -428,7 +428,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public KeyValue CancelTradeOfferInterface(int _tradeOfferID)
         {
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.m_APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 try
                 {

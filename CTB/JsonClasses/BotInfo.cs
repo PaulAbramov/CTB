@@ -4,7 +4,6 @@
     /// This class will be the storage for all the info we need for out Bot
     /// Username is the username to login to the bot
     /// Password is the password to login to the bot
-    /// APIKey you can get from here: http://steamcommunity.com/dev/apikey
     /// BotName is the displayed name of the bot to the steamcommunity
     /// AcceptDonations can be set to true or false without the upper quotation marks
     /// AcceptEscrow defines if we want to accept trades which will be held back for some days, can be set to true or false without the upper quotation marks
@@ -17,7 +16,6 @@
     {
         public string Username;
         public string Password;
-        public string APIKey             = "";
         public string BotName            = "";
         public bool AcceptFriendRequests = true;
         public bool AcceptDonations      = true;

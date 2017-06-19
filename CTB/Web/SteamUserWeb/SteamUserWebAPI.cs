@@ -50,7 +50,7 @@ namespace CTB.Web.SteamUserWeb
         {
             NameValueCollection data = new NameValueCollection
             {
-                {"key", m_steamWeb.m_APIKey},
+                {"key", m_steamWeb.APIKey},
                 {"steamids", string.Join(",", Array.ConvertAll(_steamIDs, _steamID => $"{_steamID.ConvertToUInt64()}"))}
             };
 
@@ -72,7 +72,7 @@ namespace CTB.Web.SteamUserWeb
         {
             NameValueCollection data = new NameValueCollection
             {
-                {"key", m_steamWeb.m_APIKey},
+                {"key", m_steamWeb.APIKey},
                 {"steamid", _steamID.ConvertToUInt64().ToString()}
             };
 

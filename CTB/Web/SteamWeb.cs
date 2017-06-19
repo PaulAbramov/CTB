@@ -13,8 +13,10 @@ Written by Paul "Xetas" Abramov
 */
 
 using System;
+using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SteamKit2;
 
@@ -25,9 +27,9 @@ namespace CTB.Web
         public string SessionID { get; private set; }
         public string SteamLogin { get; private set; }
         public string SteamLoginSecure { get; private set; }
+        public string APIKey { get; private set; }
 
         public readonly WebHelper m_WebHelper = new WebHelper();
-        public readonly string m_APIKey;
 
         private SteamClient m_steamClient;
 
@@ -41,10 +43,9 @@ namespace CTB.Web
         /// </summary>
         /// <param name="_steamUser"></param>
         /// <param name="_apiKey"></param>
-        public SteamWeb(SteamUser _steamUser, string _apiKey)
+        public SteamWeb(SteamUser _steamUser)
         {
             m_steamUser = _steamUser;
-            m_APIKey = _apiKey;
         }
 
         /// <summary>
@@ -160,6 +161,62 @@ namespace CTB.Web
                 m_WebHelper.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamCommunityHost));
 
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Make a call to the dev/apikey url to get the apikey for this account
+        /// Set the Apikey from the response we got
+        /// </summary>
+        public void RequestAPiKey()
+        {
+            string url = $"https://{m_SteamCommunityHost}/dev/apikey?l=english";
+
+            string response = m_WebHelper.GetStringFromRequest(url);
+
+            SetApiKey(response);
+        }
+
+        /// <summary>
+        /// Make a call to the dev/registerkey url to register an apikey for this account
+        /// Give the call some data, which will be needed to register a key
+        /// Post the data and receive an answer and set the ApiKey from this answer
+        /// </summary>
+        private void RegisterApiKey()
+        {
+            string url = $"https://{m_SteamCommunityHost}/dev/registerkey";
+
+            NameValueCollection data = new NameValueCollection()
+            {
+                {"domain", "localhost"},
+                {"agreeToTerms", "agreed"},
+                {"sessionid", SessionID},
+                {"Submit", "Register"}
+            };
+
+            string response = m_WebHelper.GetStringFromRequest(url, data, false);
+
+            SetApiKey(response);
+        }
+
+        /// <summary>
+        ///  response should like:
+        /// Key: XXXXXXXXXXXXXXXXXXXX
+        /// we want to cut off the "Key: " part, so split at the whitespace and take the right part, second part in the array we get
+        /// If there is no match, we have to register an apikey first
+        /// </summary>
+        /// <param name="_response"></param>
+        private void SetApiKey(string _response)
+        {
+            Match keyMatch = Regex.Match(_response, @"Key(?:[\s:]+)([\w]+[\d]+)", RegexOptions.IgnoreCase);
+
+            if (keyMatch.Success)
+            {
+                APIKey = keyMatch.Value.Split(' ')[1];
+            }
+            else
+            {
+                RegisterApiKey();
             }
         }
     }
