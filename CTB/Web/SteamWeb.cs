@@ -42,7 +42,6 @@ namespace CTB.Web
         /// Initialize the SteamWeb object with the apikey
         /// </summary>
         /// <param name="_steamUser"></param>
-        /// <param name="_apiKey"></param>
         public SteamWeb(SteamUser _steamUser)
         {
             m_steamUser = _steamUser;

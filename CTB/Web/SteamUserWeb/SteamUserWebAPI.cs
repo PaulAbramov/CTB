@@ -133,6 +133,52 @@ namespace CTB.Web.SteamUserWeb
         }
 
         /// <summary>
+        /// Join a specific group with the passed groupID as a string
+        /// </summary>
+        /// <param name="_groupID"></param>
+        public void JoinGroup(string _groupID)
+        {
+            string url = $"https://{m_steamWeb.m_SteamCommunityHost}/gid/{_groupID}";
+
+            NameValueCollection data = new NameValueCollection()
+            {
+                {"sessionID", m_steamWeb.SessionID},
+                {"action", "join"}
+            };
+
+            m_steamWeb.m_WebHelper.SendWebRequest(url, data, false);
+        }
+
+        /// <summary>
+        /// We do not want to send unnecessary webrequests
+        /// So we do want to check if we are already a member of this group
+        /// Therefore we want to loop trough all of our groups and check the groupID
+        /// If we are already a member just leave the function
+        /// If we are not a member join the group
+        /// </summary>
+        /// <param name="_steamFriends"></param>
+        /// <param name="_groupID"></param>
+        public void JoinGroupIfNotJoinedAlready(SteamFriends _steamFriends, ulong _groupID)
+        {
+            bool alreadyJoined = false;
+
+            for (int i = 0; i < _steamFriends.GetClanCount(); i++)
+            {
+                SteamID groupID = _steamFriends.GetClanByIndex(i);
+                if (groupID.ConvertToUInt64().Equals(_groupID))
+                {
+                    alreadyJoined = true;
+                    break;
+                }
+            }
+
+            if(!alreadyJoined)
+            {
+                JoinGroup(_groupID.ToString());
+            }
+        }
+
+        /// <summary>
         /// Make a webrequest to the badge we want to farm
         /// Load it into a htmldocument so we can analyze it easier
         /// Call "GetCardAmountToEarn" to readout the amount of cards to earn from the htmldocument

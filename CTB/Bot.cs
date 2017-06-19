@@ -180,7 +180,7 @@ namespace CTB
 
         /// <summary>
         /// Throw a message if we are successfully logged on
-        /// Authenticate in the web and start polling for trades
+        /// Authenticate in the web, if we are successfully authenticated request a APIKey, join our group, start to check for tradeoffers and also start to farm for cards
         /// 
         /// If we do not have linked a authenticator to our phone, print a message to let the user know to enter the code sent to the email
         /// If we do have linked a authenticator to our phone, try to get the authcode from our mobileHelper
@@ -210,6 +210,8 @@ namespace CTB
                         Console.WriteLine("Successfully authenticated the user in the web.");
 
                         m_steamWeb.RequestAPiKey();
+
+                        m_steamUserWebAPI.JoinGroupIfNotJoinedAlready(m_steamFriends, 103582791458407475);
 
                         m_tradeOfferHelper.StartCheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
                         m_cardFarmHelper.StartFarmCards(m_steamClient);
