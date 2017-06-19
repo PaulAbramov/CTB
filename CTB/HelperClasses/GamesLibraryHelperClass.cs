@@ -13,6 +13,7 @@ Written by Paul "Xetas" Abramov
 */
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CTB.CallbackMessages;
 using SteamKit2;
@@ -72,16 +73,16 @@ namespace CTB.HelperClasses
         /// With this function we can register gamekeys to our gameslibrary
         /// We can use "Client" from the inherited class "ClientMsgHandler"
         /// </summary>
-        /// <param name="_key"></param>
+        /// <param name="_keyToActivate"></param>
         /// <returns></returns>
-        public async Task<PurchaseResponseCallback> RedeemKey(string _key)
+        public async Task<PurchaseResponseCallback> RedeemKey(string _keyToActivate)
         {
             ClientMsgProtobuf<CMsgClientRegisterKey> registerKey = new ClientMsgProtobuf<CMsgClientRegisterKey>(EMsg.ClientRegisterKey)
             {
                 SourceJobID = Client.GetNextJobID()
             };
 
-            registerKey.Body.key = _key;
+            registerKey.Body.key = _keyToActivate;
 
             Client.Send(registerKey);
 
@@ -94,6 +95,20 @@ namespace CTB.HelperClasses
                 Console.WriteLine(e);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Function to give a response to the person who sent us the key
+        /// Get a callbackobject from RedeemKey, which holds informations about the activation and the game
+        /// create a string and return it, so we can send  the user a response and he knows if the Key is still valid
+        /// </summary>
+        /// <param name="_keyToActivate"></param>
+        /// <returns></returns>
+        public async Task<string> RedeemKeyResponse(string _keyToActivate)
+        {
+            PurchaseResponseCallback activatedResponse = await RedeemKey(_keyToActivate);
+
+            return $"Status: {activatedResponse.m_Result}/{activatedResponse.m_PurchaseResultDetail}, {string.Join(",", activatedResponse.m_Items.Select(_key => $"Key: [ {_keyToActivate} ] Game: [ {_key.Key}/{_key.Value} ]").ToArray())}";
         }
 
         /// <summary>

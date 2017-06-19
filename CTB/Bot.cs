@@ -377,8 +377,7 @@ namespace CTB
                             //  Redeem a steam game key
                             case "!R":
                             case "!REDEEM":
-                                // TODO call this inside a helperfunction to create an answer if the key was successfully activated
-                                m_gamesLibraryHelper.RedeemKey(arguments[1]);
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, m_gamesLibraryHelper.RedeemKeyResponse(arguments[1]).Result);
                                 break;
                             //  Set the permission to accept or decline friendrequests
                             case "!AFR":
