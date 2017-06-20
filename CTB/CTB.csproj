@@ -75,6 +75,11 @@
     <Compile Include="Web\JsonClasses\GetPlayerSummariesResponse.cs" />
     <Compile Include="Web\JsonClasses\GetPlayerSummary.cs" />
     <Compile Include="Web\SteamUserWeb\JsonClasses\GameToFarm.cs" />
+    <Compile Include="Web\SteamUserWeb\JsonClasses\InventoryItem.cs" />
+    <Compile Include="Web\SteamUserWeb\JsonClasses\InventoryItemDescriptions.cs" />
+    <Compile Include="Web\SteamUserWeb\JsonClasses\InventoryItemsDescription.cs" />
+    <Compile Include="Web\SteamUserWeb\JsonClasses\InventoryItemTag.cs" />
+    <Compile Include="Web\SteamUserWeb\JsonClasses\InventoryResponse.cs" />
     <Compile Include="Web\SteamUserWeb\SteamUserWebAPI.cs" />
     <Compile Include="Web\SteamWeb.cs" />
     <Compile Include="Web\TradeOffer\JsonClasses\DescriptionInItemsDescription.cs" />

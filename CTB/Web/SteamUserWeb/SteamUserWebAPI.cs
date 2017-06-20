@@ -15,6 +15,7 @@ Written by Paul "Xetas" Abramov
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using CTB.Web.JsonClasses;
@@ -367,6 +368,68 @@ namespace CTB.Web.SteamUserWeb
             name = name.Substring(nameStartIndex, nameEndIndex - nameStartIndex);
 
             return name;
+        }
+
+        /// <summary>
+        /// We are generating our sessionID by converting our steamid to a byteArray and from there to a Base64String
+        /// So to  get our steamID from the sessionID we want to reverse this
+        /// Get our SteamInventory with the contextID 6 which is for cards, backgrounds and emoticons
+        /// </summary>
+        /// <returns></returns>
+        public InventoryResponse GetOurSteamInventory()
+        {
+            SteamID ourSteamID = new SteamID(Encoding.UTF8.GetString(Convert.FromBase64String(m_steamWeb.SessionID)));
+
+            return GetInventory(ourSteamID.ConvertToUInt64(), 753, 6);
+        }
+
+        /// <summary>
+        /// Create an url to the inventory with the steamID, appID and contextID
+        /// Deserialize the response to an object so we can ease the work
+        /// 
+        /// If we have more than 5000 items, page the request with the extension "start_assetid" and the last assetid from the previous request
+        /// Make another request, if there are more pages set the variable of the default object so we can make a new request
+        /// Add the items and the descriptions to the default inventoryresponse object
+        /// 
+        /// Finally return the inventoryobject with all items from the inventory
+        /// </summary>
+        /// <param name="_steamID"></param>
+        /// <param name="_appID"></param>
+        /// <param name="_contextID"></param>
+        /// <returns></returns>
+        public InventoryResponse GetInventory(ulong _steamID, int _appID, int _contextID)
+        {
+            try
+            {
+                string url = $"http://{m_steamWeb.m_SteamCommunityHost}/inventory/{_steamID}/{_appID}/{_contextID}?l=english&trading=1&count=5000";
+
+                string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
+
+                InventoryResponse inventoryResponse = JsonConvert.DeserializeObject<InventoryResponse>(response);
+
+                while (inventoryResponse.More == 1)
+                {
+                    url += $"&start_assetid={inventoryResponse.LastAssetID}";
+
+                    response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
+
+                    InventoryResponse inventoryResponseMore = JsonConvert.DeserializeObject<InventoryResponse>(response);
+
+                    inventoryResponse.More = inventoryResponseMore.More;
+                    inventoryResponse.LastAssetID = inventoryResponseMore.LastAssetID;
+
+                    inventoryResponse.Assets.AddRange(inventoryResponseMore.Assets);
+                    inventoryResponse.ItemsDescriptions.AddRange(inventoryResponseMore.ItemsDescriptions);
+                }
+
+                return inventoryResponse;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"GetInventory : {e}");
+            }
+            
+            return new InventoryResponse();
         }
     }
 }
