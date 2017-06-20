@@ -113,7 +113,7 @@ namespace CTB
             };
 
             m_steamWeb = new SteamWeb(m_steamUser);
-            m_chatHandler = new ChatHandler();
+            m_chatHandler = new ChatHandler(_botInfo);
             m_mobileHelper = new MobileHelper();
             m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, m_steamWeb, _botInfo);
             m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
@@ -387,6 +387,30 @@ namespace CTB
                             case "!AFR":
                             case "!ACCEPTFRIENDREQUESTS":
                                 m_acceptFriendRequests = m_steamFriendsHelper.SetPermissionAcceptFriendRequests(m_steamFriends, _callback, m_acceptFriendRequests);
+                                break;
+                            //  Print a message to the user/admin if the command doesn't equal to one here
+                            default:
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, "Unknown command use !C or !commands to check for commands.");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (arguments[0].ToUpper())
+                        {
+                            //  Show the user commands 
+                            case "!C":
+                            case "!COMMANDS":
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, m_chatHandler.GetChatCommandsUser());
+                                break;
+                            //  Redeem a steam game key
+                            case "!R":
+                            case "!REDEEM":
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, m_gamesLibraryHelper.RedeemKeyResponse(arguments[1]).Result);
+                                break;
+                            //  Show the traderules
+                            case "!RULES":
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, m_chatHandler.GetTradeRules());
                                 break;
                             //  Print a message to the user/admin if the command doesn't equal to one here
                             default:

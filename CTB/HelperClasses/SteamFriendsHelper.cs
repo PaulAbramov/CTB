@@ -153,7 +153,9 @@ namespace CTB.HelperClasses
                 }
             }
 
-            _steamFriends.SendChatMessage(_friendSteamID, EChatEntryType.ChatMsg, "Hello and welcome to my Service!\nI've invited you to my group, where you can check the other bots or get to learn and trade with other steamusers.");
+            _steamFriends.SendChatMessage(_friendSteamID, EChatEntryType.ChatMsg, "Hello and welcome to my Service!" +
+                                                                                  "\nI've invited you to my group, where you can check the other bots or get to learn and trade with other steamusers." +
+                                                                                  "\nYou can type !c or !commands to see all available commands.");
         }
 
         /// <summary>
