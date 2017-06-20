@@ -81,7 +81,7 @@ namespace CTB.HelperClasses
                     {
                         bool confirmedTrade = m_steamGuardAccount.AcceptConfirmation(confirmation);
 
-                        Console.WriteLine(confirmedTrade ? "Confirmed {0}, (Confirmation ID #{1})" : "Could not confirm {0}, (Confirmation ID #{1})", confirmation.Description, confirmation.ID);
+                        Console.WriteLine(confirmedTrade ? $"Confirmed {confirmation.Description}, (Confirmation ID #{confirmation.ID})" : $"Could not confirm {confirmation.Description}, (Confirmation ID #{confirmation.ID})");
                     }
                 }
                 else

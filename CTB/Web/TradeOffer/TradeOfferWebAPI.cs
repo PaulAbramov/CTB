@@ -13,6 +13,7 @@ Written by Paul "Xetas" Abramov
 */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -222,7 +223,7 @@ namespace CTB.Web.TradeOffer
 
             if (acceptedOffer)
             {
-                Console.WriteLine("Accepted the offer with the id " + _tradeOfferID + " from the user " + _partnerID.ConvertToUInt64().ToString());
+                Console.WriteLine($"Accepted the offer with the id {_tradeOfferID} from the user {_partnerID.ConvertToUInt64()}");
 
                 return true;
             }
@@ -289,7 +290,7 @@ namespace CTB.Web.TradeOffer
 
             if (declinedoffer)
             {
-                Console.WriteLine("Declined the offer with the id " + _tradeOfferID + " from the user " + _partnerID.ConvertToUInt64().ToString());
+                Console.WriteLine($"Declined the offer with the id {_tradeOfferID} from the user {_partnerID.ConvertToUInt64()}");
 
                 return true;
             }
@@ -319,6 +320,53 @@ namespace CTB.Web.TradeOffer
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Create a tradeoffer object
+        /// Add the passed list of assets to the assets of the itemsToGive list inside the tradeoffer
+        /// Create a NameValueCollection with our data
+        /// Format is Json so we can just do "JsonConvert.SerializeObject" which parses the object into Json string
+        /// Create an url and send the request
+        /// </summary>
+        /// <param name="_tradeOfferItems"></param>
+        /// <param name="_partnerID"></param>
+        /// <param name="_tradeOfferMessage"></param>
+        /// <returns></returns>
+        public bool SendTradeOffer(List<TradeOfferItem> _tradeOfferItems, string _partnerID, string _tradeOfferMessage = "")
+        {
+            if(_tradeOfferItems.Count == 0)
+            {
+                return false;
+            }
+
+            TradeOfferSend tradeoffer = new TradeOfferSend();
+
+            tradeoffer.m_ItemsToGive.m_Assets.AddRange(_tradeOfferItems);
+
+            NameValueCollection data = new NameValueCollection()
+            {
+                {"sessionid", m_steamWeb.SessionID},
+                {"serverid", "1"},
+                {"partner", _partnerID},
+                {"tradeoffermessage", _tradeOfferMessage},
+                {"json_tradeoffer", JsonConvert.SerializeObject(tradeoffer)},
+                {"trade_offer_create_params", ""}
+            };
+
+            string referer = $"https://{m_steamWeb.m_SteamCommunityHost}/tradeoffer/new";
+            string url = $"{referer}/send";
+
+            string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url, data, false, referer);
+
+            TradeOfferAcceptResponse acceptResponse = JsonConvert.DeserializeObject<TradeOfferAcceptResponse>(response);
+
+            if (acceptResponse != null && (acceptResponse.TradeID != null || acceptResponse.NeedsEmailConfirmation || acceptResponse.NeedsMobileConfirmation))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         #endregion

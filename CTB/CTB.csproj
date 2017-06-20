@@ -86,6 +86,8 @@
     <Compile Include="Web\TradeOffer\JsonClasses\TradeOfferEscrowDurationParseException.cs" />
     <Compile Include="Web\TradeOffer\JsonClasses\TradeOfferItem.cs" />
     <Compile Include="Web\TradeOffer\JsonClasses\TradeOfferItemDescription.cs" />
+    <Compile Include="Web\TradeOffer\JsonClasses\TradeOfferSend.cs" />
+    <Compile Include="Web\TradeOffer\JsonClasses\TradeOfferSendAssets.cs" />
     <Compile Include="Web\TradeOffer\JsonClasses\TradeOffersSummaryResponse.cs" />
     <Compile Include="Web\TradeOffer\TradeOfferWebAPI.cs" />
     <Compile Include="Web\WebHelper.cs" />

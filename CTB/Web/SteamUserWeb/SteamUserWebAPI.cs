@@ -95,7 +95,7 @@ namespace CTB.Web.SteamUserWeb
         /// <returns></returns>
         public string GetGroupIDFromGroupAdress(string _url)
         {
-            string response = m_steamWeb.m_WebHelper.GetStringFromRequest(_url + "/memberslistxml/?xml=1");
+            string response = m_steamWeb.m_WebHelper.GetStringFromRequest($"{_url}/memberslistxml/?xml=1");
 
             XmlDocument groupXML = new XmlDocument();
             groupXML.LoadXml(response);
@@ -187,7 +187,7 @@ namespace CTB.Web.SteamUserWeb
         /// <returns></returns>
         public int GetGameCardsRemainingForGame(uint _appID)
         {
-            string url = "http://" + m_steamWeb.m_SteamCommunityHost + "/my/gamecards/" + _appID;
+            string url = $"http://{m_steamWeb.m_SteamCommunityHost}/my/gamecards/{_appID}";
 
             string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
 
@@ -205,7 +205,7 @@ namespace CTB.Web.SteamUserWeb
         /// <returns></returns>
         public List<GameToFarm> GetBadgesToFarm()
         {
-            string url = "http://" + m_steamWeb.m_SteamCommunityHost + "/my/badges/?p=1" ;
+            string url = $"http://{m_steamWeb.m_SteamCommunityHost}/my/badges/?p=1";
             // TODO Check the other sites too
             string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
 

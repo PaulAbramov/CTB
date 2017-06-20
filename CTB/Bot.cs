@@ -218,11 +218,11 @@ namespace CTB
                     }
                     break;
                case EResult.AccountLogonDenied:
-                    Console.WriteLine("Enter the auth code sent to the email at {0}: ", _callback.EmailDomain);
+                    Console.WriteLine($"Enter the auth code sent to the email at: {_callback.EmailDomain}");
                     m_steamUserLogonDetails.AuthCode = Console.ReadLine();
                     break;
                 case EResult.InvalidLoginAuthCode:
-                    Console.WriteLine("Enter the new auth code sent to the email at {0}: ", _callback.EmailDomain);
+                    Console.WriteLine($"Enter the new auth code sent to the email at: {_callback.EmailDomain}");
                     m_steamUserLogonDetails.AuthCode = Console.ReadLine();
                     break;
                 case EResult.AccountLoginDeniedNeedTwoFactor:
@@ -263,7 +263,7 @@ namespace CTB
                     break;
 
                 default:
-                    Console.WriteLine("Unable to logon to Steam: {0} / {1}", _callback.Result, _callback.ExtendedResult);
+                    Console.WriteLine($"Unable to logon to Steam: {_callback.Result} / { _callback.ExtendedResult}");
                     break;
             }
         }
@@ -437,7 +437,7 @@ namespace CTB
         /// <param name="_callback"></param>
         private void OnLoggedOff(SteamUser.LoggedOffCallback _callback)
         {
-            Console.WriteLine("Logged off of Steam: {0}", _callback.Result);
+            Console.WriteLine($"Logged off of Steam: {_callback.Result}");
 
             m_tradeOfferHelper.StopCheckForTradeOffers();
             m_cardFarmHelper.StopCheckFarmCards();
@@ -466,7 +466,7 @@ namespace CTB
         /// </summary>
         /// <param name="_botInfo"> where we want to check the properties </param>
         /// <returns> true if everything is okay </returns>
-        private bool CheckForNeededBotInfo(BotInfo _botInfo)
+        private static bool CheckForNeededBotInfo(BotInfo _botInfo)
         {
             if(string.IsNullOrEmpty(_botInfo.Username))
             {

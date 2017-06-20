@@ -133,7 +133,7 @@ namespace CTB.HelperClasses
 
                     if(tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_Email)
                     {
-                        Console.WriteLine("Accept the trade offer " + tradeOffer.TradeOfferID + " via your email");
+                        Console.WriteLine($"Accept the trade offer {tradeOffer.TradeOfferID} via your email");
                         tradeOfferHandledCounter++;
 
                         continue;
@@ -229,7 +229,7 @@ namespace CTB.HelperClasses
                 if (m_tradeOfferWebAPI.AcceptTradeOffer(_tradeOffer.TradeOfferID))
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("Tradeoffer " + _tradeOffer.TradeOfferID + " was sent by admin " + _tradePartnerID.ConvertToUInt64());
+                    Console.WriteLine($"Tradeoffer {_tradeOffer.TradeOfferID} was sent by admin {_tradePartnerID.ConvertToUInt64()}");
                     Console.ForegroundColor = ConsoleColor.White;
 
                     return true;
