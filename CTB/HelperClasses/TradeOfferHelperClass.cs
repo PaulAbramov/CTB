@@ -208,7 +208,9 @@ namespace CTB.HelperClasses
         {
             if (_tradeOffer.ItemsToGive == null && _tradeOffer.ItemsToReceive != null)
             {
-                return m_tradeOfferWebAPI.AcceptTradeoffer(_tradeOffer.TradeOfferID, _tradePartnerID);
+                m_tradeOfferWebAPI.AcceptTradeofferShortMessage(_tradeOffer.TradeOfferID);
+
+                return true;
             }
 
             return false;
@@ -232,8 +234,9 @@ namespace CTB.HelperClasses
                     Console.WriteLine($"Tradeoffer {_tradeOffer.TradeOfferID} was sent by admin {_tradePartnerID.ConvertToUInt64()}");
                     Console.ForegroundColor = ConsoleColor.White;
 
-                    return true;
                 }
+
+                return true;
             }
 
             return false;
@@ -252,7 +255,7 @@ namespace CTB.HelperClasses
             TradeOfferEscrowDuration hasTradeOfferEscrowDuration = m_tradeOfferWebAPI.GetTradeOfferEscrowDuration(_tradeOffer.TradeOfferID);
             if (hasTradeOfferEscrowDuration.DaysOurEscrow > 0 || hasTradeOfferEscrowDuration.DaysTheirEscrow > 0)
             {
-                return m_tradeOfferWebAPI.DeclineTradeoffer(_tradeOffer.TradeOfferID, _tradePartnerID);
+                return m_tradeOfferWebAPI.DeclineTradeofferShortMessage(_tradeOffer.TradeOfferID);
             }
 
             return false;
@@ -305,7 +308,7 @@ namespace CTB.HelperClasses
 
                 if (shouldAcceptTrade)
                 {
-                    bool accepted = m_tradeOfferWebAPI.AcceptTradeoffer(_tradeOffer.TradeOfferID, _partnerID);
+                    bool accepted = m_tradeOfferWebAPI.AcceptTradeofferShortMessage(_tradeOffer.TradeOfferID);
 
                     if(accepted)
                     {
@@ -320,7 +323,7 @@ namespace CTB.HelperClasses
                 }
             }
 
-            m_tradeOfferWebAPI.DeclineTradeoffer(_tradeOffer.TradeOfferID, _partnerID);
+            m_tradeOfferWebAPI.DeclineTradeofferShortMessage(_tradeOffer.TradeOfferID);
 
             return false;
         }

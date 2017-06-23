@@ -121,6 +121,10 @@ namespace CTB.Web
                 // The value returned by the AuthenticateUser function are KeyValues
                 KeyValue authResult;
 
+                // TODO Hanlde error here
+
+                //System.Net.WebException: The remote server returned an error: (503) Server Unavailable.
+
                 // Always TRY to work with interfaces, because it could go wrong and destroy everything
                 try
                 {
