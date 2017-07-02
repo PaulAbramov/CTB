@@ -19,6 +19,7 @@ using System.Threading;
 using CTB.CallbackMessages;
 using CTB.HelperClasses;
 using CTB.JsonClasses;
+using CTB.Web.SteamStoreWebAPI;
 using CTB.Web.SteamUserWeb;
 using SteamAuth;
 using SteamKit2;
@@ -44,6 +45,7 @@ namespace CTB
         private readonly MobileHelper m_mobileHelper;
         private readonly ChatHandler m_chatHandler;
         private readonly GamesLibraryHelperClass m_gamesLibraryHelper;
+        private readonly SteamStoreWebAPI m_steamStoreWebAPI;
 
         private string m_webAPIUserNonce;
         private bool m_acceptFriendRequests;
@@ -119,6 +121,7 @@ namespace CTB
             m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
             m_cardFarmHelper = new CardFarmHelperClass(m_steamWeb, m_gamesLibraryHelper);
             m_steamFriendsHelper = new SteamFriendsHelper();
+            m_steamStoreWebAPI = new SteamStoreWebAPI(m_steamWeb);
         }
 
         /// <summary>
@@ -192,7 +195,7 @@ namespace CTB
         /// Throw a message if there occured an error
         /// </summary>
         /// <param name="_callback"></param>
-        private void OnLoggedOn(SteamUser.LoggedOnCallback _callback)
+        private async void OnLoggedOn(SteamUser.LoggedOnCallback _callback)
         {
             m_steamUserLogonDetails.AuthCode = "";
 
@@ -205,7 +208,17 @@ namespace CTB
 
                     bool loggedon = m_steamWeb.AuthenticateUser(m_steamClient, m_webAPIUserNonce);
 
-                    if (loggedon)
+                    if (!loggedon)
+                    {
+                        while (!loggedon)
+                        {
+                            Console.WriteLine("Could not login, retrying in 5 seconds...");
+                            Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                            loggedon = await m_steamWeb.RefreshSessionIfNeeded();
+                        }
+                    }
+                    else
                     {
                         Console.WriteLine("Successfully authenticated the user in the web.");
 
@@ -382,6 +395,11 @@ namespace CTB
                             case "!R":
                             case "!REDEEM":
                                 m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, m_gamesLibraryHelper.RedeemKeyResponse(arguments[1]).Result);
+                                break;
+                            //  Explore discoveryqueues
+                            case "!E":
+                            case "!EXPLOREDISCOVERYQUEUES":
+                                m_steamStoreWebAPI.ExploreDiscoveryQueues();
                                 break;
                             //  Set the permission to accept or decline friendrequests
                             case "!AFR":

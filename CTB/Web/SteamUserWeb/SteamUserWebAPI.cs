@@ -200,34 +200,73 @@ namespace CTB.Web.SteamUserWeb
 
         /// <summary>
         /// Make a webrequest to our badge page and parse the response into a htmldocument to analyze the response
-        /// Get all Nodes with the class 'badge_title_stats_content' tagged, every node holds one Badge which is displayed
-        /// Loop trough every Node and check if it is a node we can farm and add it to the list of games to farm  we are going to return
+        /// Get the last node with the class "pagelink"
+        /// If there is one, parse it into a string and overwrite the pages variable
+        /// For the amount of sites get the list of games which we can farm and return the list
+        /// 
+        /// 
         /// </summary>
         /// <returns></returns>
         public List<GameToFarm> GetBadgesToFarm()
         {
             string url = $"http://{m_steamWeb.m_SteamCommunityHost}/my/badges/?p=1";
-            // TODO Check the other sites too
+
             string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
 
+            HtmlDocument htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(response);
+
+            HtmlNode htmlNode = htmlDocument.DocumentNode.SelectSingleNode("(//a[@class='pagelink'])[last()]");
+
+            int pages = 1;
+
+            if(htmlNode != null)
+            {
+                string lastPage = htmlNode.InnerText;
+                pages = Convert.ToInt32(lastPage);
+            }
+
             List<GameToFarm> gamesToFarm = new List<GameToFarm>();
+
+            for(int i = 0; i < pages; i++)
+            {
+                //TODO multiple same entries shouldn't make any problems, but make sure they don't
+                gamesToFarm.AddRange(GetBadgesToFarmFromSite(i));
+            }
+
+            return gamesToFarm;
+        }
+
+        /// <summary>
+        /// Make a webrequest to our badge page and parse the response into a htmldocument to analyze the response
+        /// Get all Nodes with the class 'badge_title_stats_content' tagged, every node holds one Badge which is displayed
+        /// Loop trough every Node and check if it is a node we can farm and add it to the list of games to farm  we are going to return
+        /// </summary>
+        /// <param name="_site"></param>
+        /// <returns></returns>
+        private List<GameToFarm> GetBadgesToFarmFromSite(int _site)
+        {
+            string url = $"http://{m_steamWeb.m_SteamCommunityHost}/my/badges/?p={_site}";
+
+            string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
 
             HtmlDocument htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(response);
 
             HtmlNodeCollection nodes = htmlDocument.DocumentNode.SelectNodes("//div[@class='badge_title_stats_content']");
 
-            if(nodes == null)
+            List<GameToFarm> gamesToFarm = new List<GameToFarm>();
+            if (nodes == null)
             {
                 return gamesToFarm;
             }
 
-            foreach(HtmlNode node in nodes)
+            foreach (HtmlNode node in nodes)
             {
                 string appID = GetBadgeAppID(node);
 
                 //  If the string is empty it is a badge we can not farm, so just go to the next one
-                if(string.IsNullOrEmpty(appID))
+                if (string.IsNullOrEmpty(appID))
                 {
                     continue;
                 }
@@ -240,9 +279,9 @@ namespace CTB.Web.SteamUserWeb
 
                 string name = GetBadgeName(node);
 
-                if(cardsToEarn > 0)
+                if (cardsToEarn > 0)
                 {
-                    gamesToFarm.Add(new GameToFarm { AppID = appID, CardsToEarn = cardsToEarn, CardsEarned = cardsEarned, Name = name, HoursPlayed = hoursString});
+                    gamesToFarm.Add(new GameToFarm { AppID = appID, CardsToEarn = cardsToEarn, CardsEarned = cardsEarned, Name = name, HoursPlayed = hoursString });
                 }
             }
 

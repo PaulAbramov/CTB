@@ -38,6 +38,7 @@ namespace CTB.HelperClasses
             return "\n!commands or !C - to see all commands" +
                    "\n!generatecode or !GC - to generate the AuthCode, maybe to login to the steamcommunity manually or something else" +
                    "\n!redeem or !R - to redeem a steamgamekey" +
+                   "\n!explorediscoveryqueues or !E - to get cards on events from discoveryqueues" +
                    "\n!acceptfriendrequests or !AFR - enable/disable accepting friends";
         }
 

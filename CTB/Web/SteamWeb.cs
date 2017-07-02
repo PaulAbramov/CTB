@@ -35,6 +35,7 @@ namespace CTB.Web
 
         private readonly SteamUser m_steamUser;
         public readonly string m_SteamCommunityHost = "steamcommunity.com";
+        public readonly string m_SteamStoreHost = "store.steampowered.com";
         public readonly string m_APISteamAddress = "http://api.steampowered.com/{0}/{1}/{2}";
 
 
@@ -121,7 +122,7 @@ namespace CTB.Web
                 // The value returned by the AuthenticateUser function are KeyValues
                 KeyValue authResult;
 
-                // TODO Hanlde error here
+                // TODO Handle error here
 
                 //System.Net.WebException: The remote server returned an error: (503) Server Unavailable.
 
@@ -159,8 +160,13 @@ namespace CTB.Web
                 // This will lead to inactive session while requesting API/WebCalls
                 m_WebHelper.m_CookieContainer = new CookieContainer();
 
+                m_WebHelper.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamStoreHost));
                 m_WebHelper.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamCommunityHost));
+
+                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamStoreHost));
                 m_WebHelper.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamCommunityHost));
+
+                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamStoreHost));
                 m_WebHelper.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamCommunityHost));
 
                 return true;

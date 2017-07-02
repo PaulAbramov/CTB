@@ -74,6 +74,9 @@
     <Compile Include="Web\JsonClasses\GetPlayerGroupListResponse.cs" />
     <Compile Include="Web\JsonClasses\GetPlayerSummariesResponse.cs" />
     <Compile Include="Web\JsonClasses\GetPlayerSummary.cs" />
+    <Compile Include="Web\SteamStoreWebAPI\JsonClasses\DiscoveryQueueAppData.cs" />
+    <Compile Include="Web\SteamStoreWebAPI\JsonClasses\RequestNewDiscoveryQueueResponse.cs" />
+    <Compile Include="Web\SteamStoreWebAPI\SteamStoreWebAPI.cs" />
     <Compile Include="Web\SteamUserWeb\JsonClasses\GameToFarm.cs" />
     <Compile Include="Web\SteamUserWeb\JsonClasses\InventoryItem.cs" />
     <Compile Include="Web\SteamUserWeb\JsonClasses\InventoryItemDescriptions.cs" />

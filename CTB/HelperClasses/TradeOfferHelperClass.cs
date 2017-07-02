@@ -175,7 +175,7 @@ namespace CTB.HelperClasses
                     //  Check if we have to give items but do not receive any items
                     if(tradeOffer.ItemsToGive != null && tradeOffer.ItemsToReceive == null)
                     {
-                        m_tradeOfferWebAPI.DeclineTradeoffer(tradeOffer.TradeOfferID, tradePartnerID);
+                        m_tradeOfferWebAPI.DeclineTradeofferShortMessage(tradeOffer.TradeOfferID);
                         tradeOfferHandledCounter++;
 
                         continue;
