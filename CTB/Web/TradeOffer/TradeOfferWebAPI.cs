@@ -508,6 +508,7 @@ namespace CTB.Web.TradeOffer
 
             string response = m_steamWeb.m_WebHelper.GetStringFromRequest(url);
 
+            // HTMLAgility and XPath would be a chaos here, so Regex is easier and the way to go
             Match ourMatch = Regex.Match(response, @"g_daysMyEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);
             Match theirMatch = Regex.Match(response, @"g_daysTheirEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);
 

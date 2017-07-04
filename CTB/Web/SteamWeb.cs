@@ -16,8 +16,8 @@ using System;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using SteamKit2;
 
 namespace CTB.Web
@@ -209,7 +209,7 @@ namespace CTB.Web
         }
 
         /// <summary>
-        ///  response should like:
+        /// response should be like:
         /// Key: XXXXXXXXXXXXXXXXXXXX
         /// we want to cut off the "Key: " part, so split at the whitespace and take the right part, second part in the array we get
         /// If there is no match, we have to register an apikey first
@@ -217,16 +217,37 @@ namespace CTB.Web
         /// <param name="_response"></param>
         private void SetApiKey(string _response)
         {
-            Match keyMatch = Regex.Match(_response, @"Key(?:[\s:]+)([\w]+[\d]+)", RegexOptions.IgnoreCase);
+            HtmlDocument document = new HtmlDocument();
+            document.LoadHtml(_response);
 
-            if (keyMatch.Success)
+            // XPath with HTMLAgility (easier way and less error-prone)
+            HtmlNode node = document.DocumentNode.SelectNodes("//div[@id='bodyContents_ex']/p")[0];
+
+            if (node != null)
             {
-                APIKey = keyMatch.Value.Split(' ')[1];
+                APIKey = node.InnerHtml.Split(' ')[1];
             }
             else
             {
                 RegisterApiKey();
             }
+
+            // HTMLAgility without XPATH
+            // var div = document.GetElementbyId("bodyContents_ex").Elements("p");
+
+            
+            // Get the APIKey with regex instead of HTMLAgility and XPATH
+
+            //Match keyMatch = Regex.Match(_response, @"Key(?:[\s:]+)([\w]+[\d]+)", RegexOptions.IgnoreCase);
+            //
+            //if (keyMatch.Success)
+            //{
+            //    APIKey = keyMatch.Value.Split(' ')[1];
+            //}
+            //else
+            //{
+            //    RegisterApiKey();
+            //}
         }
     }
 }

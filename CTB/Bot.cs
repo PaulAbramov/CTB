@@ -369,7 +369,7 @@ namespace CTB
         /// Check the first argument which string it does equal to
         /// </summary>
         /// <param name="_callback"></param>
-        private void OnMessageReceive(SteamFriends.FriendMsgCallback _callback)
+        private async void OnMessageReceive(SteamFriends.FriendMsgCallback _callback)
         {
             if(_callback.EntryType == EChatEntryType.ChatMsg)
             {
@@ -399,7 +399,7 @@ namespace CTB
                             //  Explore discoveryqueues
                             case "!E":
                             case "!EXPLOREDISCOVERYQUEUES":
-                                m_steamStoreWebAPI.ExploreDiscoveryQueues();
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, await m_steamStoreWebAPI.ExploreDiscoveryQueues());
                                 break;
                             //  Set the permission to accept or decline friendrequests
                             case "!AFR":

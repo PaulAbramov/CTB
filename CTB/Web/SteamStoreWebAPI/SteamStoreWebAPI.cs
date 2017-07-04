@@ -37,13 +37,15 @@ namespace CTB.Web.SteamStoreWebAPI
         /// 
         /// For every card generate a new discoveryqueue and clear every appid in this queue
         /// </summary>
-        public void ExploreDiscoveryQueues()
+        public async Task<string> ExploreDiscoveryQueues()
         {
-            Task.Run(async () =>
+            int cardsToEarn = 0;
+
+            await Task.Run(async () =>
             {
                 await m_steamWeb.RefreshSessionIfNeeded();
 
-                int cardsToEarn = GetCardsToEarnFromDiscoveryQueue();
+                cardsToEarn = GetCardsToEarnFromDiscoveryQueue();
 
                 if (cardsToEarn != 0)
                 {
@@ -66,6 +68,15 @@ namespace CTB.Web.SteamStoreWebAPI
                     }
                 }
             });
+
+            if(cardsToEarn == 0)
+            {
+                return "There were no cards to earn from discoveryqueues";
+            }
+            else
+            {
+                return $"Successfully explored {cardsToEarn} discoveryqueues";
+            }
         }
 
         /// <summary>

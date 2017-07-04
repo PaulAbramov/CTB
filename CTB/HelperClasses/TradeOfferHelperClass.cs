@@ -156,7 +156,7 @@ namespace CTB.HelperClasses
                     SteamID tradePartnerID = _steamFriendsHelper.GetSteamID(tradeOffer.AccountIDOther);
 
                     //  Check for a donation
-                    if(m_botInfo.AcceptDonations && TradeOfferIsDonation(tradeOffer, tradePartnerID))
+                    if (m_botInfo.AcceptDonations && TradeOfferIsDonation(tradeOffer, tradePartnerID))
                     {
                         tradeOfferHandledCounter++;
 
