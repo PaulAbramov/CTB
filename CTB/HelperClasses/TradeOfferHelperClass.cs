@@ -15,7 +15,6 @@ Written by Paul "Xetas" Abramov
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using CTB.JsonClasses;
 using CTB.Web;
@@ -32,8 +31,6 @@ namespace CTB.HelperClasses
         private readonly SteamWeb m_steamWeb;
         private readonly BotInfo m_botInfo;
 
-        private CancellationTokenSource m_tradeOfferCancellationTokenSource;
-
         /// <summary>
         /// Constructor to initialize our variables
         /// </summary>
@@ -46,52 +43,6 @@ namespace CTB.HelperClasses
             m_steamWeb = _steamWeb;
             m_tradeOfferWebAPI = new TradeOfferWebAPI(_steamWeb);
             m_botInfo = _botInfo;
-        }
-
-        /// <summary>
-        /// Initialize the cancellation token, we are going to need it to cancel the whole task
-        /// Create a new task, which runs parallel
-        /// While the task is not canceled check every 2 seconds for new offers and handle them
-        /// 
-        /// After canceling the task, print a message and free the allocated memory
-        /// </summary>
-        /// <param name="_steamFriendsHelper"></param>
-        /// <param name="_steamID"></param>
-        public void StartCheckForTradeOffers(SteamFriendsHelper _steamFriendsHelper, SteamID _steamID)
-        {
-            m_tradeOfferCancellationTokenSource = new CancellationTokenSource();
-
-            Task.Run(async () =>
-            {
-                while(!m_tradeOfferCancellationTokenSource.Token.IsCancellationRequested)
-                {
-                    await CheckForTradeOffers(_steamFriendsHelper, _steamID);
-
-                    await Task.Delay(TimeSpan.FromSeconds(2));
-                }
-
-                Console.WriteLine("Cancelled the TradeOfferTask.");
-                m_tradeOfferCancellationTokenSource.Dispose();
-            }, m_tradeOfferCancellationTokenSource.Token);
-        }
-
-        /// <summary>
-        /// Cancel the task from the function "StartCheckForTradeOffers" if the token is not null
-        /// </summary>
-        public void StopCheckForTradeOffers()
-        {
-            try
-            {
-                m_tradeOfferCancellationTokenSource?.Cancel();
-            }
-            catch (Exception exception)
-            {
-                if(exception.GetType() != typeof(ObjectDisposedException))
-                {
-                    Console.WriteLine(exception);
-                    throw;
-                }
-            }
         }
 
         /// <summary>
@@ -112,90 +63,93 @@ namespace CTB.HelperClasses
         /// <param name="_steamID"></param>
         public async Task CheckForTradeOffers(SteamFriendsHelper _steamFriendsHelper, SteamID _steamID)
         {
-            TradeOffersSummaryResponse tradeOfferCountToHandle = m_tradeOfferWebAPI.GetTradeOffersSummary();
-            int tradeOfferHandledCounter = 0;
-
-            GetOffersResponse receivedOffers = m_tradeOfferWebAPI.GetReceivedActiveTradeOffers(true);
-
-            if(receivedOffers.TradeOffersReceived != null)
+            await Task.Run(async () =>
             {
-                foreach(TradeOffer tradeOffer in receivedOffers.TradeOffersReceived)
+                TradeOffersSummaryResponse tradeOfferCountToHandle = m_tradeOfferWebAPI.GetTradeOffersSummary();
+                int tradeOfferHandledCounter = 0;
+
+                GetOffersResponse receivedOffers = m_tradeOfferWebAPI.GetReceivedActiveTradeOffers(true);
+
+                if (receivedOffers.TradeOffersReceived != null)
                 {
-                    if(tradeOfferHandledCounter >= tradeOfferCountToHandle.PendingReceivedCount)
+                    foreach (TradeOffer tradeOffer in receivedOffers.TradeOffersReceived)
                     {
-                        break;
-                    }
-
-                    if(tradeOffer.TradeOfferState != ETradeOfferState.ETradeOfferStateActive)
-                    {
-                        continue;
-                    }
-
-                    if(tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_Email)
-                    {
-                        Console.WriteLine($"Accept the trade offer {tradeOffer.TradeOfferID} via your email");
-                        tradeOfferHandledCounter++;
-
-                        continue;
-                    }
-
-                    //  If we were not logged on to the web or the authentication failed, go to the next tradeoffer and check it again
-                    if(! await m_steamWeb.RefreshSessionIfNeeded())
-                    {
-                        continue;
-                    }
-
-                    if(tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_MobileApp)
-                    {
-                        m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
-                        tradeOfferHandledCounter++;
-
-                        continue;
-                    }
-
-                    SteamID tradePartnerID = _steamFriendsHelper.GetSteamID(tradeOffer.AccountIDOther);
-
-                    //  Check for a donation
-                    if (m_botInfo.AcceptDonations && TradeOfferIsDonation(tradeOffer, tradePartnerID))
-                    {
-                        tradeOfferHandledCounter++;
-
-                        continue;
-                    }
-
-                    //  Check for a tradeoffer from an admin
-                    if(AdminTradeOffer(_steamFriendsHelper, tradeOffer, tradePartnerID, m_botInfo.Admins))
-                    {
-                        m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
-                        tradeOfferHandledCounter++;
-                    
-                        continue;
-                    }
-
-                    //  Check if we have to give items but do not receive any items
-                    if(tradeOffer.ItemsToGive != null && tradeOffer.ItemsToReceive == null)
-                    {
-                        m_tradeOfferWebAPI.DeclineTradeofferShortMessage(tradeOffer.TradeOfferID);
-                        tradeOfferHandledCounter++;
-
-                        continue;
-                    }
-
-                    //  If we do not want to accept escrow tradeoffers, check them here before going on
-                    if(!m_botInfo.AcceptEscrow)
-                    {
-                        if (CheckTradeOfferForEscrow(tradeOffer, tradePartnerID))
+                        if (tradeOfferHandledCounter >= tradeOfferCountToHandle.PendingReceivedCount)
                         {
-                            tradeOfferHandledCounter++;
-                    
+                            break;
+                        }
+
+                        if (tradeOffer.TradeOfferState != ETradeOfferState.ETradeOfferStateActive)
+                        {
                             continue;
                         }
-                    }
 
-                    CheckTradeOffer(receivedOffers, tradeOffer, tradePartnerID);
-                    tradeOfferHandledCounter++;
+                        if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_Email)
+                        {
+                            Console.WriteLine($"Accept the trade offer {tradeOffer.TradeOfferID} via your email");
+                            tradeOfferHandledCounter++;
+
+                            continue;
+                        }
+
+                        //  If we were not logged on to the web or the authentication failed, go to the next tradeoffer and check it again
+                        if (!await m_steamWeb.RefreshSessionIfNeeded())
+                        {
+                            continue;
+                        }
+
+                        if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_MobileApp)
+                        {
+                            m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
+                            tradeOfferHandledCounter++;
+
+                            continue;
+                        }
+
+                        SteamID tradePartnerID = _steamFriendsHelper.GetSteamID(tradeOffer.AccountIDOther);
+
+                        //  Check for a donation
+                        if (m_botInfo.AcceptDonations && TradeOfferIsDonation(tradeOffer, tradePartnerID))
+                        {
+                            tradeOfferHandledCounter++;
+
+                            continue;
+                        }
+
+                        //  Check for a tradeoffer from an admin
+                        if (AdminTradeOffer(_steamFriendsHelper, tradeOffer, tradePartnerID, m_botInfo.Admins))
+                        {
+                            m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
+                            tradeOfferHandledCounter++;
+
+                            continue;
+                        }
+
+                        //  Check if we have to give items but do not receive any items
+                        if (tradeOffer.ItemsToGive != null && tradeOffer.ItemsToReceive == null)
+                        {
+                            m_tradeOfferWebAPI.DeclineTradeofferShortMessage(tradeOffer.TradeOfferID);
+                            tradeOfferHandledCounter++;
+
+                            continue;
+                        }
+
+                        //  If we do not want to accept escrow tradeoffers, check them here before going on
+                        if (!m_botInfo.AcceptEscrow)
+                        {
+                            if (CheckTradeOfferForEscrow(tradeOffer, tradePartnerID))
+                            {
+                                tradeOfferHandledCounter++;
+
+                                continue;
+                            }
+                        }
+
+                        CheckTradeOffer(receivedOffers, tradeOffer, tradePartnerID);
+                        tradeOfferHandledCounter++;
+                    }
                 }
-            }
+            });
         }
 
         /// <summary>
@@ -204,7 +158,7 @@ namespace CTB.HelperClasses
         /// <param name="_tradeOffer"></param>
         /// <param name="_tradePartnerID"></param>
         /// <returns></returns>
-        public bool TradeOfferIsDonation(TradeOffer _tradeOffer, SteamID _tradePartnerID)
+        private bool TradeOfferIsDonation(TradeOffer _tradeOffer, SteamID _tradePartnerID)
         {
             if (_tradeOffer.ItemsToGive == null && _tradeOffer.ItemsToReceive != null)
             {
@@ -224,7 +178,7 @@ namespace CTB.HelperClasses
         /// <param name="_tradePartnerID"></param>
         /// <param name="_admins"></param>
         /// <returns></returns>
-        public bool AdminTradeOffer(SteamFriendsHelper _steamFriendsHelper, TradeOffer _tradeOffer, SteamID _tradePartnerID, string[] _admins)
+        private bool AdminTradeOffer(SteamFriendsHelper _steamFriendsHelper, TradeOffer _tradeOffer, SteamID _tradePartnerID, string[] _admins)
         {
             if (_steamFriendsHelper.IsBotAdmin(_tradePartnerID, m_botInfo.Admins))
             {
@@ -250,7 +204,7 @@ namespace CTB.HelperClasses
         /// <param name="_tradeOffer"></param>
         /// <param name="_tradePartnerID"></param>
         /// <returns></returns>
-        public bool CheckTradeOfferForEscrow(TradeOffer _tradeOffer, SteamID _tradePartnerID)
+        private bool CheckTradeOfferForEscrow(TradeOffer _tradeOffer, SteamID _tradePartnerID)
         {
             TradeOfferEscrowDuration hasTradeOfferEscrowDuration = m_tradeOfferWebAPI.GetTradeOfferEscrowDuration(_tradeOffer.TradeOfferID);
             if (hasTradeOfferEscrowDuration.DaysOurEscrow > 0 || hasTradeOfferEscrowDuration.DaysTheirEscrow > 0)
@@ -277,7 +231,7 @@ namespace CTB.HelperClasses
         /// <param name="_tradeOffer"></param>
         /// <param name="_partnerID"></param>
         /// <returns></returns>
-        public bool CheckTradeOffer(GetOffersResponse _offersResponse, TradeOffer _tradeOffer, SteamID _partnerID)
+        private bool CheckTradeOffer(GetOffersResponse _offersResponse, TradeOffer _tradeOffer, SteamID _partnerID)
         {
             if(_tradeOffer.ItemsToGive != null && _tradeOffer.ItemsToReceive != null)
             {

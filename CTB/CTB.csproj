@@ -60,6 +60,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
+    <Compile Include="CallbackMessages\CustomHandler.cs" />
+    <Compile Include="CallbackMessages\NotificationCallback.cs" />
     <Compile Include="CallbackMessages\PurchaseResponseCallback.cs" />
     <Compile Include="HelperClasses\CardFarmHelperClass.cs" />
     <Compile Include="HelperClasses\ChatHandler.cs" />

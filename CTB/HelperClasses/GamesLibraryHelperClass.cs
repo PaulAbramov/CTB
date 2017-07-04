@@ -112,8 +112,8 @@ namespace CTB.HelperClasses
         }
 
         /// <summary>
-        /// We want to handle the response for the specific type "PurchasesResponse"
-        /// To handle it post a callback which will be caught by the callbackmanager
+        /// We want to handle the response for the specific type "PurchaseResponse"
+        /// To handle it, post a callback which will be caught by the callbackmanager
         /// </summary>
         /// <param name="_packetMsg"></param>
         private void HandlePurchaseResponse(IPacketMsg _packetMsg)

@@ -46,6 +46,7 @@ namespace CTB
         private readonly ChatHandler m_chatHandler;
         private readonly GamesLibraryHelperClass m_gamesLibraryHelper;
         private readonly SteamStoreWebAPI m_steamStoreWebAPI;
+        private readonly CustomHandler m_customHandler;
 
         private string m_webAPIUserNonce;
         private bool m_acceptFriendRequests;
@@ -95,6 +96,10 @@ namespace CTB
             m_gamesLibraryHelper = new GamesLibraryHelperClass();
             m_steamClient.AddHandler(m_gamesLibraryHelper);
             m_callbackManager.Subscribe<PurchaseResponseCallback>(OnPurchaseResponse);
+
+            m_customHandler = new CustomHandler();
+            m_steamClient.AddHandler(m_customHandler);
+            m_callbackManager.Subscribe<NotificationCallback>(OnNotifications);
             #endregion
             #endregion
 
@@ -226,7 +231,6 @@ namespace CTB
 
                         m_steamUserWebAPI.JoinGroupIfNotJoinedAlready(m_steamFriends, 103582791458407475);
 
-                        m_tradeOfferHelper.StartCheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
                         m_cardFarmHelper.StartFarmCards(m_steamClient);
                     }
                     break;
@@ -362,6 +366,31 @@ namespace CTB
         }
 
         /// <summary>
+        /// We are going to handle our custom callback for notifications we receive
+        /// If the notification tells us about tradeoffers, handle tradeoffers
+        /// </summary>
+        /// <param name="_callback"></param>
+        private async void OnNotifications(NotificationCallback _callback)
+        {
+            if(_callback == null || _callback.m_Notification == null || _callback.m_Notification.Count == 0)
+            {
+                return;
+            }
+
+            foreach(ENotification notification in _callback.m_Notification)
+            {
+                switch(notification)
+                {
+                    case ENotification.TRADING:
+                        await m_tradeOfferHelper.CheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
+                        break;
+                    case ENotification.ITEMS:
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
         /// Check if we have received a chatmessage
         /// If the message starts with a exclamation mark, it is a command
         /// If the commnad has multiple arguments split them so we can check them easier
@@ -457,7 +486,6 @@ namespace CTB
         {
             Console.WriteLine($"Logged off of Steam: {_callback.Result}");
 
-            m_tradeOfferHelper.StopCheckForTradeOffers();
             m_cardFarmHelper.StopCheckFarmCards();
         }
 
@@ -471,7 +499,6 @@ namespace CTB
         {
             Console.WriteLine("Disconnected from Steam, try to connect again in 5 seconds!");
 
-            m_tradeOfferHelper.StopCheckForTradeOffers();
             m_cardFarmHelper.StopCheckFarmCards();
 
             Thread.Sleep(TimeSpan.FromSeconds(5));
