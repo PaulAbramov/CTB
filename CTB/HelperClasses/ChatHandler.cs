@@ -63,25 +63,25 @@ namespace CTB.HelperClasses
 
             if(m_botInfo.Accept1on1Trades)
             {
-                response += $"\nI am accepting 1:1 tradeoffers for the same set.";
+                response += "\nI am accepting 1:1 tradeoffers for the same set.";
             }
             if(m_botInfo.Accept1on2Trades)
             {
-                response += $"\nI am accepting 1:2 tradeoffers for cross sets.";
+                response += "\nI am accepting 1:2 tradeoffers for cross sets.";
             }
 
             if(m_botInfo.AcceptEscrow)
             {
-                response += $"\nI am accepting escrowed tradeoffers.";
+                response += "\nI am accepting escrowed tradeoffers.";
             }
             else
             {
-                response += $"\nI am not accepting escrowed tradeoffers.";
+                response += "\nI am not accepting escrowed tradeoffers.";
             }
 
             if(m_botInfo.AcceptDonations)
             {
-                response += $"\nI am accepting donations.";
+                response += "\nI am accepting donations.";
             }
 
             return response;

@@ -372,7 +372,7 @@ namespace CTB
         /// <param name="_callback"></param>
         private async void OnNotifications(NotificationCallback _callback)
         {
-            if(_callback == null || _callback.m_Notification == null || _callback.m_Notification.Count == 0)
+            if(_callback?.m_Notification == null || _callback.m_Notification.Count == 0)
             {
                 return;
             }
@@ -383,8 +383,6 @@ namespace CTB
                 {
                     case ENotification.TRADING:
                         await m_tradeOfferHelper.CheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
-                        break;
-                    case ENotification.ITEMS:
                         break;
                 }
             }

@@ -117,7 +117,7 @@ namespace CTB.HelperClasses
                         }
 
                         //  Check for a tradeoffer from an admin
-                        if (AdminTradeOffer(_steamFriendsHelper, tradeOffer, tradePartnerID, m_botInfo.Admins))
+                        if (AdminTradeOffer(_steamFriendsHelper, tradeOffer, tradePartnerID))
                         {
                             m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
                             tradeOfferHandledCounter++;
@@ -176,9 +176,8 @@ namespace CTB.HelperClasses
         /// <param name="_steamFriendsHelper"></param>
         /// <param name="_tradeOffer"></param>
         /// <param name="_tradePartnerID"></param>
-        /// <param name="_admins"></param>
         /// <returns></returns>
-        private bool AdminTradeOffer(SteamFriendsHelper _steamFriendsHelper, TradeOffer _tradeOffer, SteamID _tradePartnerID, string[] _admins)
+        private bool AdminTradeOffer(SteamFriendsHelper _steamFriendsHelper, TradeOffer _tradeOffer, SteamID _tradePartnerID)
         {
             if (_steamFriendsHelper.IsBotAdmin(_tradePartnerID, m_botInfo.Admins))
             {
@@ -231,7 +230,7 @@ namespace CTB.HelperClasses
         /// <param name="_tradeOffer"></param>
         /// <param name="_partnerID"></param>
         /// <returns></returns>
-        private bool CheckTradeOffer(GetOffersResponse _offersResponse, TradeOffer _tradeOffer, SteamID _partnerID)
+        private void CheckTradeOffer(GetOffersResponse _offersResponse, TradeOffer _tradeOffer, SteamID _partnerID)
         {
             if(_tradeOffer.ItemsToGive != null && _tradeOffer.ItemsToReceive != null)
             {
@@ -257,7 +256,6 @@ namespace CTB.HelperClasses
                 if (_tradeOffer.ItemsToGive.Count > ourItems.Count)
                 {
                     m_tradeOfferWebAPI.DeclineTradeoffer(_tradeOffer.TradeOfferID, _partnerID);
-                    return false;
                 }
 
                 if (shouldAcceptTrade)
@@ -272,14 +270,10 @@ namespace CTB.HelperClasses
                     {
                         Console.WriteLine("tradeoffer couldn't be accepted, return true, so we can handle it next time.");
                     }
-
-                    return true;
                 }
             }
 
             m_tradeOfferWebAPI.DeclineTradeofferShortMessage(_tradeOffer.TradeOfferID);
-
-            return false;
         }
 
         /// <summary>

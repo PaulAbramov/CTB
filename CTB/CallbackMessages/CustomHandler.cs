@@ -32,9 +32,6 @@ namespace CTB.CallbackMessages
                 case EMsg.ClientUserNotifications:
                     HandleUserNotifications(_packetMsg);
                     break;
-                case EMsg.ClientItemAnnouncements:
-                    HandleItemAnnouncements(_packetMsg);
-                    break;
             }
         }
 
@@ -51,22 +48,6 @@ namespace CTB.CallbackMessages
             }
 
             ClientMsgProtobuf<CMsgClientUserNotifications> response = new ClientMsgProtobuf<CMsgClientUserNotifications>(_packetMsg);
-            Client.PostCallback(new NotificationCallback(_packetMsg.TargetJobID, response.Body));
-        }
-
-        /// <summary>
-        /// We want to handle the response for the specific type "ItemAnnouncements"
-        /// To handle it, post a callback which will be caught by the callbackmanager
-        /// </summary>
-        /// <param name="_packetMsg"></param>
-        private void HandleItemAnnouncements(IPacketMsg _packetMsg)
-        {
-            if (_packetMsg == null)
-            {
-                return;
-            }
-
-            ClientMsgProtobuf<CMsgClientItemAnnouncements> response = new ClientMsgProtobuf<CMsgClientItemAnnouncements>(_packetMsg);
             Client.PostCallback(new NotificationCallback(_packetMsg.TargetJobID, response.Body));
         }
     }

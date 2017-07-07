@@ -42,31 +42,7 @@ namespace CTB.CallbackMessages
 
             if(_clientUserNotifications.notifications.Count > 0)
             {
-                m_Notification = new List<ENotification>(_clientUserNotifications.notifications.Select(notification => (ENotification)notification.user_notification_type));
-            }
-        }
-
-        /// <summary>
-        /// Second Constructor
-        /// 
-        /// Pass a jobID so we can identify the callback if we are going to receive it as an answer from steam
-        /// From the returned "_clientItemAnnouncements" we want to 
-        /// </summary>
-        /// <param name="_jobID"></param>
-        /// <param name="_clientItemAnnouncements"></param>
-        public NotificationCallback(JobID _jobID, CMsgClientItemAnnouncements _clientItemAnnouncements)
-        {
-            JobID = _jobID;
-
-            if (_clientItemAnnouncements.count_new_items > 0)
-            {
-                m_Notification = new List<ENotification>
-                {
-                    ENotification.ITEMS
-                };
-
-                List<ENotification> notifications = new List<ENotification>();
-                notifications.Add(ENotification.ITEMS);
+                m_Notification = new List<ENotification>(_clientUserNotifications.notifications.Select(_notification => (ENotification)_notification.user_notification_type));
             }
         }
     }
@@ -78,7 +54,5 @@ namespace CTB.CallbackMessages
     {
         UNKNOWN = 0,
         TRADING = 1,
-        ITEMS = 2
-        //TODO Change Items to 254
     }
 }

@@ -40,10 +40,14 @@ namespace CTB.Web.SteamStoreWebAPI
         public async Task<string> ExploreDiscoveryQueues()
         {
             int cardsToEarn = 0;
+            string responseToAdmin = "";
 
             await Task.Run(async () =>
             {
-                await m_steamWeb.RefreshSessionIfNeeded();
+                if(!await m_steamWeb.RefreshSessionIfNeeded())
+                {
+                    responseToAdmin = "Could not reauthenticate.";
+                }
 
                 cardsToEarn = GetCardsToEarnFromDiscoveryQueue();
 
@@ -53,7 +57,7 @@ namespace CTB.Web.SteamStoreWebAPI
                     {
                         RequestNewDiscoveryQueueResponse discoveryQueue = GenerateNewDiscoveryQueue();
 
-                        foreach (var appID in discoveryQueue.Queue)
+                        foreach (uint appID in discoveryQueue.Queue)
                         {
                             string urlToApp = $"http://{m_steamWeb.m_SteamStoreHost}/app/{appID}";
 
@@ -69,14 +73,12 @@ namespace CTB.Web.SteamStoreWebAPI
                 }
             });
 
-            if(cardsToEarn == 0)
+            if(string.IsNullOrEmpty(responseToAdmin))
             {
-                return "There were no cards to earn from discoveryqueues";
+                responseToAdmin = cardsToEarn == 0 ? "There were no cards to earn from discoveryqueues" : $"Successfully explored {cardsToEarn} discoveryqueues";
             }
-            else
-            {
-                return $"Successfully explored {cardsToEarn} discoveryqueues";
-            }
+
+            return responseToAdmin;
         }
 
         /// <summary>
@@ -86,7 +88,7 @@ namespace CTB.Web.SteamStoreWebAPI
         /// If so, get the digit out of the string and convert it to an int and return it
         /// </summary>
         /// <returns></returns>
-        public int  GetCardsToEarnFromDiscoveryQueue()
+        public int GetCardsToEarnFromDiscoveryQueue()
         {
             string url = $"http://{m_steamWeb.m_SteamStoreHost}/explore?l=english";
 

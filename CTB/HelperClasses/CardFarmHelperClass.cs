@@ -70,7 +70,10 @@ namespace CTB.HelperClasses
             {
                 while(!m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    await m_steamWeb.RefreshSessionIfNeeded();
+                    if(!await m_steamWeb.RefreshSessionIfNeeded())
+                    {
+                        continue;
+                    }
 
                     List<GameToFarm> gamesToFarm = m_steamUserWebAPI.GetBadgesToFarm();
 
@@ -87,7 +90,10 @@ namespace CTB.HelperClasses
 
                         await Task.Delay(TimeSpan.FromMinutes(5));
 
-                        await m_steamWeb.RefreshSessionIfNeeded();
+                        if(!await m_steamWeb.RefreshSessionIfNeeded())
+                        {
+                            continue;
+                        }
 
                         isRunning = m_steamUserWebAPI.GetGameCardsRemainingForGame(Convert.ToUInt32(gamesToFarm.First().AppID)) > 0;
 
