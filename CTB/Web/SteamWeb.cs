@@ -24,12 +24,16 @@ namespace CTB.Web
 {
     public class SteamWeb
     {
+        #region Singleton with parameters
+
+        public static SteamWeb Instance { get; private set; }
+
+        #endregion
+
         public string SessionID { get; private set; }
         public string SteamLogin { get; private set; }
         public string SteamLoginSecure { get; private set; }
         public string APIKey { get; private set; }
-
-        public readonly WebHelper m_WebHelper = new WebHelper();
 
         private SteamClient m_steamClient;
 
@@ -43,9 +47,21 @@ namespace CTB.Web
         /// Initialize the SteamWeb object with the apikey
         /// </summary>
         /// <param name="_steamUser"></param>
-        public SteamWeb(SteamUser _steamUser)
+        private SteamWeb(SteamUser _steamUser)
         {
             m_steamUser = _steamUser;
+        }
+
+        /// <summary>
+        /// Set the instance of the Singleton
+        /// </summary>
+        /// <param name="_steamUser"></param>
+        public static void SetInstance(SteamUser _steamUser)
+        {
+            if (Instance == null)
+            {
+                Instance = new SteamWeb(_steamUser);
+            }
         }
 
         /// <summary>
@@ -57,7 +73,7 @@ namespace CTB.Web
         /// <returns></returns>
         public async Task<bool> RefreshSessionIfNeeded()
         {
-            string response = m_WebHelper.GetStringFromRequest("http://steamcommunity.com/my/");
+            string response = WebHelper.Instance.GetStringFromRequest("http://steamcommunity.com/my/");
 
             bool isNotLoggedOn = response.Contains("Sign In");
 
@@ -154,16 +170,16 @@ namespace CTB.Web
                 // Create a new instance of the cookieContainer
                 // After loosing connection a second m_domainTable will be created, holding the sessionID from the time we were not authenticated
                 // This will lead to inactive session while requesting API/WebCalls
-                m_WebHelper.m_CookieContainer = new CookieContainer();
+                WebHelper.Instance.m_CookieContainer = new CookieContainer();
 
-                m_WebHelper.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamStoreHost));
-                m_WebHelper.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamCommunityHost));
+                WebHelper.Instance.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamStoreHost));
+                WebHelper.Instance.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamCommunityHost));
 
-                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamStoreHost));
-                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamCommunityHost));
+                WebHelper.Instance.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamStoreHost));
+                WebHelper.Instance.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamCommunityHost));
 
-                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamStoreHost));
-                m_WebHelper.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamCommunityHost));
+                WebHelper.Instance.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamStoreHost));
+                WebHelper.Instance.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamCommunityHost));
 
                 return true;
             }
@@ -177,7 +193,7 @@ namespace CTB.Web
         {
             string url = $"https://{m_SteamCommunityHost}/dev/apikey?l=english";
 
-            string response = m_WebHelper.GetStringFromRequest(url);
+            string response = WebHelper.Instance.GetStringFromRequest(url);
 
             SetApiKey(response);
         }
@@ -199,7 +215,7 @@ namespace CTB.Web
                 {"Submit", "Register"}
             };
 
-            string response = m_WebHelper.GetStringFromRequest(url, data, false);
+            string response = WebHelper.Instance.GetStringFromRequest(url, data, false);
 
             SetApiKey(response);
         }

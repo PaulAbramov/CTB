@@ -27,7 +27,6 @@ namespace CTB.HelperClasses
     public class CardFarmHelperClass
     {
         private readonly SteamUserWebAPI m_steamUserWebAPI;
-        private readonly SteamWeb m_steamWeb;
         private readonly GamesLibraryHelperClass m_gamesLibraryHelper;
 
         private CancellationTokenSource m_cardFarmCancellationTokenSource;
@@ -35,13 +34,11 @@ namespace CTB.HelperClasses
         /// <summary>
         /// Constructor to initialize variables and the class
         /// </summary>
-        /// <param name="_steamWeb"></param>
         /// <param name="_gamesLibraryHelper"></param>
-        public CardFarmHelperClass(SteamWeb _steamWeb, GamesLibraryHelperClass _gamesLibraryHelper)
+        public CardFarmHelperClass(GamesLibraryHelperClass _gamesLibraryHelper)
         {
-            m_steamWeb = _steamWeb;
 
-            m_steamUserWebAPI = new SteamUserWebAPI(_steamWeb);
+            m_steamUserWebAPI = new SteamUserWebAPI();
 
             m_gamesLibraryHelper = _gamesLibraryHelper;
         }
@@ -70,7 +67,7 @@ namespace CTB.HelperClasses
             {
                 while(!m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    if(!await m_steamWeb.RefreshSessionIfNeeded())
+                    if(!await SteamWeb.Instance.RefreshSessionIfNeeded())
                     {
                         continue;
                     }
@@ -90,7 +87,7 @@ namespace CTB.HelperClasses
 
                         await Task.Delay(TimeSpan.FromMinutes(5));
 
-                        if(!await m_steamWeb.RefreshSessionIfNeeded())
+                        if(!await SteamWeb.Instance.RefreshSessionIfNeeded())
                         {
                             continue;
                         }

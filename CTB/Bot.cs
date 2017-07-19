@@ -37,7 +37,6 @@ namespace CTB
         private readonly SteamFriends m_steamFriends;
 #endregion
 
-        private readonly SteamWeb m_steamWeb;
         private readonly TradeOfferHelperClass m_tradeOfferHelper;
         private readonly CardFarmHelperClass m_cardFarmHelper;
         private readonly SteamFriendsHelper m_steamFriendsHelper;
@@ -46,7 +45,6 @@ namespace CTB
         private readonly ChatHandler m_chatHandler;
         private readonly GamesLibraryHelperClass m_gamesLibraryHelper;
         private readonly SteamStoreWebAPI m_steamStoreWebAPI;
-        private readonly CustomHandler m_customHandler;
 
         private string m_webAPIUserNonce;
         private bool m_acceptFriendRequests;
@@ -97,8 +95,8 @@ namespace CTB
             m_steamClient.AddHandler(m_gamesLibraryHelper);
             m_callbackManager.Subscribe<PurchaseResponseCallback>(OnPurchaseResponse);
 
-            m_customHandler = new CustomHandler();
-            m_steamClient.AddHandler(m_customHandler);
+            CustomHandler customHandler = new CustomHandler();
+            m_steamClient.AddHandler(customHandler);
             m_callbackManager.Subscribe<NotificationCallback>(OnNotifications);
             #endregion
             #endregion
@@ -119,14 +117,14 @@ namespace CTB
                 ShouldRememberPassword = true
             };
 
-            m_steamWeb = new SteamWeb(m_steamUser);
+            SteamWeb.SetInstance(m_steamUser);
             m_chatHandler = new ChatHandler(_botInfo);
             m_mobileHelper = new MobileHelper();
-            m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, m_steamWeb, _botInfo);
-            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
-            m_cardFarmHelper = new CardFarmHelperClass(m_steamWeb, m_gamesLibraryHelper);
+            m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, _botInfo);
+            m_steamUserWebAPI = new SteamUserWebAPI();
+            m_cardFarmHelper = new CardFarmHelperClass(m_gamesLibraryHelper);
             m_steamFriendsHelper = new SteamFriendsHelper();
-            m_steamStoreWebAPI = new SteamStoreWebAPI(m_steamWeb);
+            m_steamStoreWebAPI = new SteamStoreWebAPI();
         }
 
         /// <summary>
@@ -211,7 +209,7 @@ namespace CTB
                 case EResult.OK:
                     Console.WriteLine("Successfully logged on.");
 
-                    bool loggedon = m_steamWeb.AuthenticateUser(m_steamClient, m_webAPIUserNonce);
+                    bool loggedon = SteamWeb.Instance.AuthenticateUser(m_steamClient, m_webAPIUserNonce);
 
                     if (!loggedon)
                     {
@@ -220,14 +218,14 @@ namespace CTB
                             Console.WriteLine("Could not login, retrying in 5 seconds...");
                             Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                            loggedon = await m_steamWeb.RefreshSessionIfNeeded();
+                            loggedon = await SteamWeb.Instance.RefreshSessionIfNeeded();
                         }
                     }
                     else
                     {
                         Console.WriteLine("Successfully authenticated the user in the web.");
 
-                        m_steamWeb.RequestAPiKey();
+                        SteamWeb.Instance.RequestAPiKey();
 
                         m_steamUserWebAPI.JoinGroupIfNotJoinedAlready(m_steamFriends, 103582791458407475);
 

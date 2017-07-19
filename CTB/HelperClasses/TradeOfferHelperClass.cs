@@ -28,20 +28,17 @@ namespace CTB.HelperClasses
     {
         private readonly TradeOfferWebAPI m_tradeOfferWebAPI;
         private readonly MobileHelper m_mobileHelper;
-        private readonly SteamWeb m_steamWeb;
         private readonly BotInfo m_botInfo;
 
         /// <summary>
         /// Constructor to initialize our variables
         /// </summary>
         /// <param name="_mobileHelper"></param>
-        /// <param name="_steamWeb"></param>
         /// <param name="_botInfo"></param>
-        public TradeOfferHelperClass(MobileHelper _mobileHelper, SteamWeb _steamWeb, BotInfo _botInfo)
+        public TradeOfferHelperClass(MobileHelper _mobileHelper, BotInfo _botInfo)
         {
             m_mobileHelper = _mobileHelper;
-            m_steamWeb = _steamWeb;
-            m_tradeOfferWebAPI = new TradeOfferWebAPI(_steamWeb);
+            m_tradeOfferWebAPI = new TradeOfferWebAPI();
             m_botInfo = _botInfo;
         }
 
@@ -93,14 +90,14 @@ namespace CTB.HelperClasses
                         }
 
                         //  If we were not logged on to the web or the authentication failed, go to the next tradeoffer and check it again
-                        if (!await m_steamWeb.RefreshSessionIfNeeded())
+                        if (!await SteamWeb.Instance.RefreshSessionIfNeeded())
                         {
                             continue;
                         }
 
                         if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_MobileApp)
                         {
-                            m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
+                            m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
                             tradeOfferHandledCounter++;
 
                             continue;
@@ -119,7 +116,7 @@ namespace CTB.HelperClasses
                         //  Check for a tradeoffer from an admin
                         if (AdminTradeOffer(_steamFriendsHelper, tradeOffer, tradePartnerID))
                         {
-                            m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
+                            m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
                             tradeOfferHandledCounter++;
 
                             continue;
@@ -264,7 +261,7 @@ namespace CTB.HelperClasses
 
                     if(accepted)
                     {
-                        m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
+                        m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
                     }
                     else
                     {
