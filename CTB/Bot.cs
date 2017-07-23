@@ -349,7 +349,7 @@ namespace CTB
 
             foreach (SteamFriends.FriendsListCallback.Friend friend in _callback.FriendList)
             {
-                if(friend.Relationship == EFriendRelationship.RequestRecipient)
+                if(friend.Relationship == EFriendRelationship.RequestRecipient && friend.SteamID.IsIndividualAccount)
                 {
                     if(m_acceptFriendRequests)
                     {
