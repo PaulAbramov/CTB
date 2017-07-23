@@ -15,6 +15,7 @@ Written by Paul "Xetas" Abramov
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using CTB.JsonClasses;
 using CTB.Web.SteamUserWeb;
 using Newtonsoft.Json;
@@ -125,7 +126,7 @@ namespace CTB.HelperClasses
         /// <param name="_friendSteamID"></param>
         /// <param name="_groupID"></param>
         /// <param name="_steamUserWebAPI"></param>
-        public void AcceptFriendRequestAndInviteToGroup(SteamFriends _steamFriends, SteamID _friendSteamID, SteamUserWebAPI _steamUserWebAPI, string _groupID = "")
+        public async Task AcceptFriendRequestAndInviteToGroup(SteamFriends _steamFriends, SteamID _friendSteamID, SteamUserWebAPI _steamUserWebAPI, string _groupID = "")
         {
             _steamFriends.AddFriend(_friendSteamID);
 
@@ -134,7 +135,7 @@ namespace CTB.HelperClasses
                 SteamID groupID = _steamFriends.GetClanByIndex(i);
                 if(groupID.ConvertToUInt64().Equals(103582791458407475) && _steamFriends.GetClanName(groupID).ToUpper().Contains("XETAS"))
                 {
-                    _steamUserWebAPI.InviteToGroup(groupID.ToString(), _friendSteamID.ConvertToUInt64().ToString());
+                    await _steamUserWebAPI.InviteToGroup(groupID.ToString(), _friendSteamID.ConvertToUInt64().ToString());
                 }
 
                 if (!string.IsNullOrEmpty(_groupID))
@@ -142,14 +143,14 @@ namespace CTB.HelperClasses
                     string groupID64;
                     if (_groupID.Contains("steamcommunity") && _groupID.Contains("groups"))
                     {
-                        groupID64 = _steamUserWebAPI.GetGroupIDFromGroupAdress(_groupID);
+                        groupID64 = await _steamUserWebAPI.GetGroupIDFromGroupAdress(_groupID);
                     }
                     else
                     {
                         groupID64 = GetGroupID64String(_groupID);
                     }
 
-                    _steamUserWebAPI.InviteToGroup(groupID64, _friendSteamID.ConvertToUInt64().ToString());
+                    await _steamUserWebAPI.InviteToGroup(groupID64, _friendSteamID.ConvertToUInt64().ToString());
                 }
             }
 

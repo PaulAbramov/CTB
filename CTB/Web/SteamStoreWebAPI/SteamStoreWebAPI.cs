@@ -42,13 +42,13 @@ namespace CTB.Web.SteamStoreWebAPI
                     responseToAdmin = "Could not reauthenticate.";
                 }
 
-                cardsToEarn = GetCardsToEarnFromDiscoveryQueue();
+                cardsToEarn = await GetCardsToEarnFromDiscoveryQueue();
 
                 if (cardsToEarn != 0)
                 {
                     for (int i = 0; i < cardsToEarn; i++)
                     {
-                        RequestNewDiscoveryQueueResponse discoveryQueue = GenerateNewDiscoveryQueue();
+                        RequestNewDiscoveryQueueResponse discoveryQueue = await GenerateNewDiscoveryQueue();
 
                         foreach (uint appID in discoveryQueue.Queue)
                         {
@@ -60,7 +60,7 @@ namespace CTB.Web.SteamStoreWebAPI
                                 {"appid_to_clear_from_queue", appID.ToString()}
                             };
 
-                            string response = WebHelper.Instance.GetStringFromRequest(urlToApp, data, false);
+                            string response = await WebHelper.Instance.GetStringFromRequest(urlToApp, data, false);
                         }
                     }
                 }
@@ -81,11 +81,11 @@ namespace CTB.Web.SteamStoreWebAPI
         /// If so, get the digit out of the string and convert it to an int and return it
         /// </summary>
         /// <returns></returns>
-        public int GetCardsToEarnFromDiscoveryQueue()
+        public async Task<int> GetCardsToEarnFromDiscoveryQueue()
         {
             string url = $"http://{SteamWeb.Instance.m_SteamStoreHost}/explore?l=english";
 
-            string response = WebHelper.Instance.GetStringFromRequest(url);
+            string response = await WebHelper.Instance.GetStringFromRequest(url);
 
             HtmlDocument document = new HtmlDocument();
             document.LoadHtml(response);
@@ -116,7 +116,7 @@ namespace CTB.Web.SteamStoreWebAPI
         /// Make a post request to an url to get a new discoveryqueue which we can work with
         /// </summary>
         /// <returns></returns>
-        private RequestNewDiscoveryQueueResponse GenerateNewDiscoveryQueue()
+        private async Task<RequestNewDiscoveryQueueResponse> GenerateNewDiscoveryQueue()
         {
             string url = $"http://{SteamWeb.Instance.m_SteamStoreHost}/explore/generatenewdiscoveryqueue";
 
@@ -126,7 +126,7 @@ namespace CTB.Web.SteamStoreWebAPI
                     {"queuetype", "0"}
                 };
 
-            string stringResponse = WebHelper.Instance.GetStringFromRequest(url, data, false);
+            string stringResponse = await WebHelper.Instance.GetStringFromRequest(url, data, false);
 
             RequestNewDiscoveryQueueResponse response = JsonConvert.DeserializeObject<RequestNewDiscoveryQueueResponse>(stringResponse);
 

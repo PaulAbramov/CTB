@@ -24,10 +24,8 @@ namespace CTB.Web
 {
     public class SteamWeb
     {
-        #region Singleton with parameters
-
+        #region Singleton
         public static SteamWeb Instance { get; private set; }
-
         #endregion
 
         public string SessionID { get; private set; }
@@ -41,7 +39,6 @@ namespace CTB.Web
         public readonly string m_SteamCommunityHost = "steamcommunity.com";
         public readonly string m_SteamStoreHost = "store.steampowered.com";
         public readonly string m_APISteamAddress = "http://api.steampowered.com/{0}/{1}/{2}";
-
 
         /// <summary>
         /// Initialize the SteamWeb object with the apikey
@@ -73,7 +70,7 @@ namespace CTB.Web
         /// <returns></returns>
         public async Task<bool> RefreshSessionIfNeeded()
         {
-            string response = WebHelper.Instance.GetStringFromRequest("http://steamcommunity.com/my/");
+            string response = await WebHelper.Instance.GetStringFromRequest("http://steamcommunity.com/my/");
 
             bool isNotLoggedOn = response.Contains("Sign In");
 
@@ -189,13 +186,13 @@ namespace CTB.Web
         /// Make a call to the dev/apikey url to get the apikey for this account
         /// Set the Apikey from the response we got
         /// </summary>
-        public void RequestAPiKey()
+        public async Task RequestAPiKey()
         {
             string url = $"https://{m_SteamCommunityHost}/dev/apikey?l=english";
 
-            string response = WebHelper.Instance.GetStringFromRequest(url);
+            string response = await WebHelper.Instance.GetStringFromRequest(url);
 
-            SetApiKey(response);
+            await SetApiKey(response);
         }
 
         /// <summary>
@@ -203,7 +200,7 @@ namespace CTB.Web
         /// Give the call some data, which will be needed to register a key
         /// Post the data and receive an answer and set the ApiKey from this answer
         /// </summary>
-        private void RegisterApiKey()
+        private async Task RegisterApiKey()
         {
             string url = $"https://{m_SteamCommunityHost}/dev/registerkey";
 
@@ -215,9 +212,9 @@ namespace CTB.Web
                 {"Submit", "Register"}
             };
 
-            string response = WebHelper.Instance.GetStringFromRequest(url, data, false);
+            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false);
 
-            SetApiKey(response);
+            await SetApiKey(response);
         }
 
         /// <summary>
@@ -227,7 +224,7 @@ namespace CTB.Web
         /// If there is no match, we have to register an apikey first
         /// </summary>
         /// <param name="_response"></param>
-        private void SetApiKey(string _response)
+        private async Task SetApiKey(string _response)
         {
             HtmlDocument document = new HtmlDocument();
             document.LoadHtml(_response);
@@ -241,7 +238,7 @@ namespace CTB.Web
             }
             else
             {
-                RegisterApiKey();
+                await RegisterApiKey();
             }
 
             // HTMLAgility without XPATH

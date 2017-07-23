@@ -17,6 +17,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace CTB.Web
@@ -46,9 +47,9 @@ namespace CTB.Web
         /// <param name="_isGetMethod"></param>
         /// <param name="_referer"></param>
         /// <returns></returns>
-        public string GetStringFromRequest(string _url, NameValueCollection _data = null, bool _isGetMethod = true, string _referer = null)
+        public async Task<string> GetStringFromRequest(string _url, NameValueCollection _data = null, bool _isGetMethod = true, string _referer = null)
         {
-            using (HttpWebResponse response = SendWebRequest(_url, _data, _isGetMethod, _referer))
+            using (HttpWebResponse response = await SendWebRequest(_url, _data, _isGetMethod, _referer))
             {
                 if (response == null)
                 {
@@ -85,7 +86,7 @@ namespace CTB.Web
         /// <param name="_isGetMethod"></param>
         /// <param name="_referer"></param>
         /// <returns></returns>
-        public HttpWebResponse SendWebRequest(string _url, NameValueCollection _data = null, bool _isGetMethod = true, string _referer = null)
+        public async Task<HttpWebResponse> SendWebRequest(string _url, NameValueCollection _data = null, bool _isGetMethod = true, string _referer = null)
         {
             string dataString = _data == null ? null : string.Join("&", Array.ConvertAll(_data.AllKeys, _key => $"{HttpUtility.UrlEncode(_key)}={HttpUtility.UrlEncode(_data[_key])}"));
 
@@ -112,19 +113,19 @@ namespace CTB.Web
 
             if(_isGetMethod || string.IsNullOrEmpty(dataString))
             {
-                return TrySendRequest(request);
+                return await TrySendRequest(request);
             }
             else
             {
                 byte[] dataBytes = Encoding.UTF8.GetBytes(dataString);
                 request.ContentLength = dataBytes.Length;
 
-                using (Stream requestStream = request.GetRequestStream())
+                using (Stream requestStream = await request.GetRequestStreamAsync())
                 {
                     requestStream.Write(dataBytes, 0, dataBytes.Length);
                 }
 
-                return TrySendRequest(request);
+                return await TrySendRequest(request);
             }
         }
 
@@ -136,11 +137,11 @@ namespace CTB.Web
         /// </summary>
         /// <param name="_webRequest"></param>
         /// <returns></returns>
-        private HttpWebResponse TrySendRequest(HttpWebRequest _webRequest)
+        private async Task<HttpWebResponse> TrySendRequest(HttpWebRequest _webRequest)
         {
             try
             {
-                return _webRequest.GetResponse() as HttpWebResponse;
+                return await _webRequest.GetResponseAsync() as HttpWebResponse;
             }
             catch (WebException exception)
             {

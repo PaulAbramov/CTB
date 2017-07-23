@@ -72,7 +72,7 @@ namespace CTB.HelperClasses
                         continue;
                     }
 
-                    List<GameToFarm> gamesToFarm = m_steamUserWebAPI.GetBadgesToFarm();
+                    List<GameToFarm> gamesToFarm = await m_steamUserWebAPI.GetBadgesToFarm();
 
                     bool isRunning = (gamesToFarm.Count > 0);
 
@@ -92,7 +92,7 @@ namespace CTB.HelperClasses
                             continue;
                         }
 
-                        isRunning = m_steamUserWebAPI.GetGameCardsRemainingForGame(Convert.ToUInt32(gamesToFarm.First().AppID)) > 0;
+                        isRunning = await m_steamUserWebAPI.GetGameCardsRemainingForGame(Convert.ToUInt32(gamesToFarm.First().AppID)) > 0;
 
                         if(!isRunning)
                         {

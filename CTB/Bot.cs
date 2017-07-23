@@ -225,9 +225,9 @@ namespace CTB
                     {
                         Console.WriteLine("Successfully authenticated the user in the web.");
 
-                        SteamWeb.Instance.RequestAPiKey();
+                        await SteamWeb.Instance.RequestAPiKey();
 
-                        m_steamUserWebAPI.JoinGroupIfNotJoinedAlready(m_steamFriends, 103582791458407475);
+                        await m_steamUserWebAPI.JoinGroupIfNotJoinedAlready(m_steamFriends, 103582791458407475);
 
                         m_cardFarmHelper.StartFarmCards(m_steamClient);
                     }
@@ -338,13 +338,13 @@ namespace CTB
         /// Check if we have any friendrequests, if we have some, accept and invite the user to our group or decline them
         /// </summary>
         /// <param name="_callback"></param>
-        private void OnLoadedFriendsList(SteamFriends.FriendsListCallback _callback)
+        private async void OnLoadedFriendsList(SteamFriends.FriendsListCallback _callback)
         {
-            m_steamFriends.SetPersonaState(EPersonaState.Online);
+            await m_steamFriends.SetPersonaState(EPersonaState.Online);
 
             if (!string.IsNullOrEmpty(m_botName))
             {
-                m_steamFriends.SetPersonaName(m_botName);
+                await m_steamFriends.SetPersonaName(m_botName);
             }
 
             foreach (SteamFriends.FriendsListCallback.Friend friend in _callback.FriendList)
@@ -353,7 +353,7 @@ namespace CTB
                 {
                     if(m_acceptFriendRequests)
                     {
-                        m_steamFriendsHelper.AcceptFriendRequestAndInviteToGroup(m_steamFriends, friend.SteamID,  m_steamUserWebAPI, m_adminGroupToInviteTo);
+                        await m_steamFriendsHelper.AcceptFriendRequestAndInviteToGroup(m_steamFriends, friend.SteamID,  m_steamUserWebAPI, m_adminGroupToInviteTo);
                     }
                     else
                     {
