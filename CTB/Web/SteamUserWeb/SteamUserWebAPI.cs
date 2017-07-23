@@ -275,6 +275,14 @@ namespace CTB.Web.SteamUserWeb
                 }
             }
 
+            //  foreachloop into linq (alternative to the foreachloop)
+            //  gamesToFarm.AddRange(from node in nodes let appID = GetBadgeAppID(node) where !string.IsNullOrEmpty(appID)
+            //                     let cardsToEarn = GetCardAmountToEarn(node)
+            //                     let cardsEarned = GetCardAmountEarned(node)
+            //                     let hoursString = GetBadgeFarmedTime(node)
+            //                     let name = GetBadgeName(node) where cardsToEarn > 0
+            //                     select new GameToFarm {AppID = appID, CardsToEarn = cardsToEarn, CardsEarned = cardsEarned, Name = name, HoursPlayed = hoursString});
+
             return gamesToFarm;
         }
 
@@ -410,6 +418,19 @@ namespace CTB.Web.SteamUserWeb
             SteamID ourSteamID = new SteamID(Encoding.UTF8.GetString(Convert.FromBase64String(SteamWeb.Instance.SessionID)));
 
             return await GetInventory(ourSteamID.ConvertToUInt64(), 753, 6);
+        }
+
+        /// <summary>
+        /// We are generating our sessionID by converting our steamid to a byteArray and from there to a Base64String
+        /// So to  get our steamID from the sessionID we want to reverse this
+        /// Get our CSGOInventory with the contextID 2 which is for skins, cases etc.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<InventoryResponse> GetOurCSGOInventory()
+        {
+            SteamID ourSteamID = new SteamID(Encoding.UTF8.GetString(Convert.FromBase64String(SteamWeb.Instance.SessionID)));
+
+            return await GetInventory(ourSteamID.ConvertToUInt64(), 730, 2);
         }
 
         /// <summary>
