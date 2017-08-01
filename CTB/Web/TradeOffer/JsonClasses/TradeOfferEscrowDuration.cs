@@ -19,6 +19,7 @@ namespace CTB.Web.TradeOffer.JsonClasses
     /// </summary>
     public class TradeOfferEscrowDuration
     {
+        public bool Success { get; set; }
         public int DaysOurEscrow { get; set; }
         public int DaysTheirEscrow { get; set; }
     }

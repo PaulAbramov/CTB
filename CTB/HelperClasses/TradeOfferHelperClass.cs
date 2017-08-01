@@ -60,93 +60,92 @@ namespace CTB.HelperClasses
         /// <param name="_steamID"></param>
         public async Task CheckForTradeOffers(SteamFriendsHelper _steamFriendsHelper, SteamID _steamID)
         {
-            await Task.Run(async () =>
+            //Todo test if it throws errors
+
+            TradeOffersSummaryResponse tradeOfferCountToHandle = await m_tradeOfferWebAPI.GetTradeOffersSummary();
+            int tradeOfferHandledCounter = 0;
+
+            GetOffersResponse receivedOffers = await m_tradeOfferWebAPI.GetReceivedActiveTradeOffers(true);
+
+            if (receivedOffers.TradeOffersReceived != null)
             {
-                TradeOffersSummaryResponse tradeOfferCountToHandle = await m_tradeOfferWebAPI.GetTradeOffersSummary();
-                int tradeOfferHandledCounter = 0;
-
-                GetOffersResponse receivedOffers = await m_tradeOfferWebAPI.GetReceivedActiveTradeOffers(true);
-
-                if (receivedOffers.TradeOffersReceived != null)
+                foreach (TradeOffer tradeOffer in receivedOffers.TradeOffersReceived)
                 {
-                    foreach (TradeOffer tradeOffer in receivedOffers.TradeOffersReceived)
+                    if (tradeOfferHandledCounter >= tradeOfferCountToHandle.PendingReceivedCount)
                     {
-                        if (tradeOfferHandledCounter >= tradeOfferCountToHandle.PendingReceivedCount)
-                        {
-                            break;
-                        }
-
-                        if (tradeOffer.TradeOfferState != ETradeOfferState.ETradeOfferStateActive)
-                        {
-                            continue;
-                        }
-
-                        if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_Email)
-                        {
-                            Console.WriteLine($"Accept the trade offer {tradeOffer.TradeOfferID} via your email");
-                            tradeOfferHandledCounter++;
-
-                            continue;
-                        }
-
-                        //  If we were not logged on to the web or the authentication failed, go to the next tradeoffer and check it again
-                        if (!await SteamWeb.Instance.RefreshSessionIfNeeded())
-                        {
-                            continue;
-                        }
-
-                        if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_MobileApp)
-                        {
-                            m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
-                            tradeOfferHandledCounter++;
-
-                            continue;
-                        }
-
-                        SteamID tradePartnerID = _steamFriendsHelper.GetSteamID(tradeOffer.AccountIDOther);
-
-                        //  Check for a donation
-                        if (m_botInfo.AcceptDonations && await TradeOfferIsDonation(tradeOffer, tradePartnerID))
-                        {
-                            tradeOfferHandledCounter++;
-
-                            continue;
-                        }
-
-                        //  Check for a tradeoffer from an admin
-                        if (await AdminTradeOffer(_steamFriendsHelper, tradeOffer, tradePartnerID))
-                        {
-                            m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
-                            tradeOfferHandledCounter++;
-
-                            continue;
-                        }
-
-                        //  Check if we have to give items but do not receive any items
-                        if (tradeOffer.ItemsToGive != null && tradeOffer.ItemsToReceive == null)
-                        {
-                            await m_tradeOfferWebAPI.DeclineTradeofferShortMessage(tradeOffer.TradeOfferID);
-                            tradeOfferHandledCounter++;
-
-                            continue;
-                        }
-
-                        //  If we do not want to accept escrow tradeoffers, check them here before going on
-                        if (!m_botInfo.AcceptEscrow)
-                        {
-                            if (await CheckTradeOfferForEscrow(tradeOffer, tradePartnerID))
-                            {
-                                tradeOfferHandledCounter++;
-
-                                continue;
-                            }
-                        }
-
-                        await CheckTradeOffer(receivedOffers, tradeOffer, tradePartnerID);
-                        tradeOfferHandledCounter++;
+                        break;
                     }
+
+                    if (tradeOffer.TradeOfferState != ETradeOfferState.ETradeOfferStateActive)
+                    {
+                        continue;
+                    }
+
+                    if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_Email)
+                    {
+                        Console.WriteLine($"Accept the trade offer {tradeOffer.TradeOfferID} via your email");
+                        tradeOfferHandledCounter++;
+
+                        continue;
+                    }
+
+                    //  If we were not logged on to the web or the authentication failed, go to the next tradeoffer and check it again
+                    if (!await SteamWeb.Instance.RefreshSessionIfNeeded())
+                    {
+                        continue;
+                    }
+
+                    if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_MobileApp)
+                    {
+                        m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
+                        tradeOfferHandledCounter++;
+
+                        continue;
+                    }
+
+                    SteamID tradePartnerID = _steamFriendsHelper.GetSteamID(tradeOffer.AccountIDOther);
+
+                    //  Check for a donation
+                    if (m_botInfo.AcceptDonations && await TradeOfferIsDonation(tradeOffer, tradePartnerID))
+                    {
+                        tradeOfferHandledCounter++;
+
+                        continue;
+                    }
+
+                    //  Check for a tradeoffer from an admin
+                    if (await AdminTradeOffer(_steamFriendsHelper, tradeOffer, tradePartnerID))
+                    {
+                        m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
+                        tradeOfferHandledCounter++;
+
+                        continue;
+                    }
+
+                    //  Check if we have to give items but do not receive any items
+                    if (tradeOffer.ItemsToGive != null && tradeOffer.ItemsToReceive == null)
+                    {
+                        await m_tradeOfferWebAPI.DeclineTradeofferShortMessage(tradeOffer.TradeOfferID);
+                        tradeOfferHandledCounter++;
+
+                        continue;
+                    }
+
+                    //  If we do not want to accept escrow tradeoffers, check them here before going on
+                    if (!m_botInfo.AcceptEscrow)
+                    {
+                        if (await CheckTradeOfferForEscrow(tradeOffer, tradePartnerID))
+                        {
+                            tradeOfferHandledCounter++;
+
+                            continue;
+                        }
+                    }
+
+                    await CheckTradeOffer(receivedOffers, tradeOffer, tradePartnerID);
+                    tradeOfferHandledCounter++;
                 }
-            });
+            }
         }
 
         /// <summary>
@@ -202,13 +201,14 @@ namespace CTB.HelperClasses
         /// <returns></returns>
         private async Task<bool> CheckTradeOfferForEscrow(TradeOffer _tradeOffer, SteamID _tradePartnerID)
         {
+            //TODO test it
             TradeOfferEscrowDuration hasTradeOfferEscrowDuration = await m_tradeOfferWebAPI.GetTradeOfferEscrowDuration(_tradeOffer.TradeOfferID);
-            if (hasTradeOfferEscrowDuration.DaysOurEscrow > 0 || hasTradeOfferEscrowDuration.DaysTheirEscrow > 0)
+            if (hasTradeOfferEscrowDuration.Success && hasTradeOfferEscrowDuration.DaysOurEscrow > 0 || hasTradeOfferEscrowDuration.DaysTheirEscrow > 0)
             {
                 return await m_tradeOfferWebAPI.DeclineTradeofferShortMessage(_tradeOffer.TradeOfferID);
             }
 
-            return false;
+            return !hasTradeOfferEscrowDuration.Success;
         }
 
         /// <summary>
@@ -430,7 +430,7 @@ namespace CTB.HelperClasses
     /// Now we can check from right to left whether the value is set as an one or zero
     /// </summary>
     [Flags]
-    enum ItemType
+    internal enum ItemType
     {
         BOOSTER_PACK = 1,
         EMOTICON = 2,

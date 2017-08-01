@@ -502,28 +502,29 @@ namespace CTB.Web.TradeOffer
             Match ourMatch = Regex.Match(response, @"g_daysMyEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);
             Match theirMatch = Regex.Match(response, @"g_daysTheirEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);
 
-            try
+            if (!ourMatch.Groups["days"].Success || !theirMatch.Groups["days"].Success)
             {
-                if (!ourMatch.Groups["days"].Success || !theirMatch.Groups["days"].Success)
+                Match steamErrorMatch = Regex.Match(response, @"<div id=""error_msg"">([^>]+)<\/div>", RegexOptions.IgnoreCase);
+
+                if (steamErrorMatch.Groups.Count > 1)
                 {
-                    Match steamErrorMatch = Regex.Match(response, @"<div id=""error_msg"">([^>]+)<\/div>", RegexOptions.IgnoreCase);
-
-                    if (steamErrorMatch.Groups.Count > 1)
-                    {
-                        string steamError = Regex.Replace(steamErrorMatch.Groups[1].Value.Trim(), @"\t|\n|\r", "");
-                        throw new TradeOfferEscrowDurationParseException(steamError);
-                    }
-
-                    throw new TradeOfferEscrowDurationParseException($"Not logged in, can't retrieve escrow duration for tradeofferID: {_tradeofferID}");
+                    string steamError = Regex.Replace(steamErrorMatch.Groups[1].Value.Trim(), @"\t|\n|\r", "");
+                    Console.WriteLine(steamError);
                 }
-            }
-            catch (TradeOfferEscrowDurationParseException exception)
-            {
-                Console.WriteLine(exception);
+
+                Console.WriteLine($"Not logged in, can't retrieve escrow duration for tradeofferID: {_tradeofferID}");
+
+                return new TradeOfferEscrowDuration
+                {
+                    Success = false,
+                    DaysOurEscrow = -1,
+                    DaysTheirEscrow = -1
+                };
             }
 
-            return new TradeOfferEscrowDuration()
+            return new TradeOfferEscrowDuration
             {
+                Success = true,
                 DaysOurEscrow = int.Parse(ourMatch.Groups["days"].Value),
                 DaysTheirEscrow = int.Parse(theirMatch.Groups["days"].Value)
             };
