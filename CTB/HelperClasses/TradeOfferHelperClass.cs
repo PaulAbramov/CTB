@@ -15,6 +15,7 @@ Written by Paul "Xetas" Abramov
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CTB.JsonClasses;
 using CTB.Web;
@@ -26,9 +27,13 @@ namespace CTB.HelperClasses
 {
     public class TradeOfferHelperClass
     {
+        private readonly SemaphoreSlim m_tradesSemaphore = new SemaphoreSlim(1);
+
         private readonly TradeOfferWebAPI m_tradeOfferWebAPI;
         private readonly MobileHelper m_mobileHelper;
         private readonly BotInfo m_botInfo;
+
+        private bool m_parsingScheduled;
 
         /// <summary>
         /// Constructor to initialize our variables
@@ -40,6 +45,53 @@ namespace CTB.HelperClasses
             m_mobileHelper = _mobileHelper;
             m_tradeOfferWebAPI = new TradeOfferWebAPI();
             m_botInfo = _botInfo;
+        }
+
+        /// <summary>
+        /// We want to have 2 tasks running
+        /// 
+        /// First Task will be going trough, starts to check for tradeoffers and afterwards releases the semaphore
+        /// Second Task will set the boolean "parsingScheduled" to true, and will wait for the first Task to complete
+        /// When the first Task completes and realeases the semaphore, 
+        /// the second Task is going to lock the semaphore and start the function to check for tradeoffers
+        /// The next Task has to wait for the Task which is currently checking the offer
+        /// 
+        /// Every further Task will be returned, so we have 2 Tasks working on this
+        /// One is working on the trades
+        /// The other is waiting for the first to complete and handling the trades afterwards
+        /// 
+        /// We can't lock an object in async await, this is a way to lock a function to prevent it from be called multiple times before reaching the end
+        /// </summary>
+        /// <param name="_steamFriendsHelper"></param>
+        /// <param name="_steamID"></param>
+        /// <returns></returns>
+        public async Task CheckTradeOffers(SteamFriendsHelper _steamFriendsHelper, SteamID _steamID)
+        {
+            lock (m_tradesSemaphore)
+            {
+                if (m_parsingScheduled)
+                {
+                    return;
+                }
+
+                m_parsingScheduled = true;
+            }
+
+            await m_tradesSemaphore.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                lock (m_tradesSemaphore)
+                {
+                    m_parsingScheduled = false;
+                }
+
+                await CheckForTradeOffers(_steamFriendsHelper, _steamID).ConfigureAwait(false);
+            }
+            finally
+            {
+                m_tradesSemaphore.Release();
+            }
         }
 
         /// <summary>
@@ -60,8 +112,6 @@ namespace CTB.HelperClasses
         /// <param name="_steamID"></param>
         public async Task CheckForTradeOffers(SteamFriendsHelper _steamFriendsHelper, SteamID _steamID)
         {
-            //Todo test if it throws errors
-
             TradeOffersSummaryResponse tradeOfferCountToHandle = await m_tradeOfferWebAPI.GetTradeOffersSummary();
             int tradeOfferHandledCounter = 0;
 
@@ -201,7 +251,6 @@ namespace CTB.HelperClasses
         /// <returns></returns>
         private async Task<bool> CheckTradeOfferForEscrow(TradeOffer _tradeOffer, SteamID _tradePartnerID)
         {
-            //TODO test it
             TradeOfferEscrowDuration hasTradeOfferEscrowDuration = await m_tradeOfferWebAPI.GetTradeOfferEscrowDuration(_tradeOffer.TradeOfferID);
             if (hasTradeOfferEscrowDuration.Success && hasTradeOfferEscrowDuration.DaysOurEscrow > 0 || hasTradeOfferEscrowDuration.DaysTheirEscrow > 0)
             {
@@ -267,6 +316,8 @@ namespace CTB.HelperClasses
                     {
                         Console.WriteLine("tradeoffer couldn't be accepted, return true, so we can handle it next time.");
                     }
+
+                    return;
                 }
             }
 

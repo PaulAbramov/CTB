@@ -380,7 +380,7 @@ namespace CTB
                 switch(notification)
                 {
                     case ENotification.TRADING:
-                        await m_tradeOfferHelper.CheckForTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
+                        await m_tradeOfferHelper.CheckTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
                         break;
                 }
             }
