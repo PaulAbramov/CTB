@@ -229,7 +229,7 @@ namespace CTB
 
                         await m_steamUserWebAPI.JoinGroupIfNotJoinedAlready(m_steamFriends, 103582791458407475).ConfigureAwait(false);
 
-                        await m_cardFarmHelper.StartFarmCards(m_steamClient).ConfigureAwait(false);
+                        m_cardFarmHelper.StartFarmCards(m_steamClient);
                     }
                     break;
                case EResult.AccountLogonDenied:
