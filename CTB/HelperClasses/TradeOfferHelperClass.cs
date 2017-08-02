@@ -299,9 +299,11 @@ namespace CTB.HelperClasses
                     shouldAcceptTrade = CheckForOneOnOneCardTrade(ourItems, theirItems).Count == ourItemsCount;
                 }
 
-                if (_tradeOffer.ItemsToGive.Count > ourItems.Count)
+                if (_tradeOffer.ItemsToGive.Count > _tradeOffer.ItemsToReceive.Count)
                 {
                     await m_tradeOfferWebAPI.DeclineTradeoffer(_tradeOffer.TradeOfferID, _partnerID).ConfigureAwait(false);
+
+                    return;
                 }
 
                 if (shouldAcceptTrade)
