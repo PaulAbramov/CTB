@@ -66,7 +66,7 @@ namespace CTB.Web.TradeOffer
 
             try
             {
-                string response = await WebHelper.Instance.GetStringFromRequest(url, data);
+                string response = await WebHelper.Instance.GetStringFromRequest(url, data).ConfigureAwait(false);
                 APIResponse<GetOffersResponse> offersResponse = JsonConvert.DeserializeObject<APIResponse<GetOffersResponse>>(response);
                 return offersResponse.Response;
             }
@@ -85,7 +85,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public async Task<GetOffersResponse> GetAllActiveTradeOffers(bool _descriptionOfItems)
         {
-            return await GetTradeOffers(true, true, _descriptionOfItems, true, false);
+            return await GetTradeOffers(true, true, _descriptionOfItems, true, false).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public async Task<GetOffersResponse> GetReceivedActiveTradeOffers(bool _descriptionOfItems)
         {
-            return await GetTradeOffers(false, true, _descriptionOfItems, true, false);
+            return await GetTradeOffers(false, true, _descriptionOfItems, true, false).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public async Task<GetOffersResponse> GetSentActiveTradeOffers(bool _descriptionOfItems)
         {
-            return await GetTradeOffers(true, false, _descriptionOfItems, true, false);
+            return await GetTradeOffers(true, false, _descriptionOfItems, true, false).ConfigureAwait(false);
         }
 #endregion
 
@@ -128,7 +128,7 @@ namespace CTB.Web.TradeOffer
 
             try
             {
-                string response = await WebHelper.Instance.GetStringFromRequest(url, data);
+                string response = await WebHelper.Instance.GetStringFromRequest(url, data).ConfigureAwait(false);
 
                 APIResponse<GetOfferResponse> offerResponse = JsonConvert.DeserializeObject<APIResponse<GetOfferResponse>>(response);
 
@@ -155,7 +155,7 @@ namespace CTB.Web.TradeOffer
 
             try
             {
-                string response = await WebHelper.Instance.GetStringFromRequest(url, data);
+                string response = await WebHelper.Instance.GetStringFromRequest(url, data).ConfigureAwait(false);
 
                 APIResponse<TradeOffersSummaryResponse> tradeOffersSummaryResponse = JsonConvert.DeserializeObject<APIResponse<TradeOffersSummaryResponse>>(response);
 
@@ -188,7 +188,7 @@ namespace CTB.Web.TradeOffer
 
             string referer = $"https://steamcommunity.com/tradeoffer/{_tradeOfferID}";
 
-            string response = await WebHelper.Instance.GetStringFromRequest($"{referer}/accept", data, false, referer);
+            string response = await WebHelper.Instance.GetStringFromRequest($"{referer}/accept", data, false, referer).ConfigureAwait(false);
 
             TradeOfferAcceptResponse acceptResponse = JsonConvert.DeserializeObject<TradeOfferAcceptResponse>(response);
 
@@ -209,7 +209,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public async Task<bool> AcceptTradeoffer(string _tradeOfferID, SteamID _partnerID)
         {
-            bool acceptedOffer = await AcceptTradeOffer(_tradeOfferID);
+            bool acceptedOffer = await AcceptTradeOffer(_tradeOfferID).ConfigureAwait(false);
 
             if (acceptedOffer)
             {
@@ -231,7 +231,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public async Task<bool> AcceptTradeofferShortMessage(string _tradeOfferID)
         {
-            bool acceptedOffer = await AcceptTradeOffer(_tradeOfferID);
+            bool acceptedOffer = await AcceptTradeOffer(_tradeOfferID).ConfigureAwait(false);
 
             if (acceptedOffer)
             {
@@ -262,7 +262,7 @@ namespace CTB.Web.TradeOffer
 
             string url = string.Format(SteamWeb.Instance.m_APISteamAddress, IEconServiceInterface, "DeclineTradeOffer", "v1");
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false);
+            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false).ConfigureAwait(false);
 
             return true;
         }
@@ -276,7 +276,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public async Task<bool> DeclineTradeoffer(string _tradeOfferID, SteamID _partnerID)
         {
-            bool declinedoffer = await DeclineTradeOffer(_tradeOfferID);
+            bool declinedoffer = await DeclineTradeOffer(_tradeOfferID).ConfigureAwait(false);
 
             if (declinedoffer)
             {
@@ -298,7 +298,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public async Task<bool> DeclineTradeofferShortMessage(string _tradeOfferID)
         {
-            bool declinedoffer = await DeclineTradeOffer(_tradeOfferID);
+            bool declinedoffer = await DeclineTradeOffer(_tradeOfferID).ConfigureAwait(false);
 
             if (declinedoffer)
             {
@@ -347,7 +347,7 @@ namespace CTB.Web.TradeOffer
             string referer = $"https://{SteamWeb.Instance.m_SteamCommunityHost}/tradeoffer/new";
             string url = $"{referer}/send";
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false, referer);
+            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false, referer).ConfigureAwait(false);
 
             TradeOfferAcceptResponse acceptResponse = JsonConvert.DeserializeObject<TradeOfferAcceptResponse>(response);
 
@@ -496,7 +496,7 @@ namespace CTB.Web.TradeOffer
         {
             string url = "http://steamcommunity.com/tradeoffer/" + _tradeofferID;
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url);
+            string response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
 
             // HTMLAgility and XPath would be a chaos here, so Regex is easier and the way to go
             Match ourMatch = Regex.Match(response, @"g_daysMyEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);

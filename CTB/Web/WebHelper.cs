@@ -49,7 +49,7 @@ namespace CTB.Web
         /// <returns></returns>
         public async Task<string> GetStringFromRequest(string _url, NameValueCollection _data = null, bool _isGetMethod = true, string _referer = null)
         {
-            using (HttpWebResponse response = await SendWebRequest(_url, _data, _isGetMethod, _referer))
+            using (HttpWebResponse response = await SendWebRequest(_url, _data, _isGetMethod, _referer).ConfigureAwait(false))
             {
                 if (response == null)
                 {
@@ -113,19 +113,19 @@ namespace CTB.Web
 
             if(_isGetMethod || string.IsNullOrEmpty(dataString))
             {
-                return await TrySendRequest(request);
+                return await TrySendRequest(request).ConfigureAwait(false);
             }
             else
             {
                 byte[] dataBytes = Encoding.UTF8.GetBytes(dataString);
                 request.ContentLength = dataBytes.Length;
 
-                using (Stream requestStream = await request.GetRequestStreamAsync())
+                using (Stream requestStream = await request.GetRequestStreamAsync().ConfigureAwait(false))
                 {
                     requestStream.Write(dataBytes, 0, dataBytes.Length);
                 }
 
-                return await TrySendRequest(request);
+                return await TrySendRequest(request).ConfigureAwait(false);
             }
         }
 
@@ -141,7 +141,7 @@ namespace CTB.Web
         {
             try
             {
-                return await _webRequest.GetResponseAsync() as HttpWebResponse;
+                return await _webRequest.GetResponseAsync().ConfigureAwait(false) as HttpWebResponse;
             }
             catch (WebException exception)
             {

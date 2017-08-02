@@ -57,60 +57,57 @@ namespace CTB.HelperClasses
         /// If we are comming out fron the while loop we want to check for the next badge to farm, therefore we do not wait 5 minuts
         /// </summary>
         /// <param name="_steamClient"></param>
-        public void StartFarmCards(SteamClient _steamClient)
+        public async Task StartFarmCards(SteamClient _steamClient)
         {
             m_cardFarmCancellationTokenSource = new CancellationTokenSource();
 
             bool checkForNewGame = false;
 
-            Task.Run(async () =>
+            while(!m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
             {
-                while(!m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
+                if(!await SteamWeb.Instance.RefreshSessionIfNeeded().ConfigureAwait(false))
                 {
-                    if(!await SteamWeb.Instance.RefreshSessionIfNeeded())
+                    continue;
+                }
+
+                List<GameToFarm> gamesToFarm = await m_steamUserWebAPI.GetBadgesToFarm().ConfigureAwait(false);
+
+                bool isRunning = (gamesToFarm.Count > 0);
+
+                if(!isRunning)
+                {
+                    m_gamesLibraryHelper.SetGamePlaying(0);
+                }
+
+                while(isRunning && !m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    m_gamesLibraryHelper.SetGamePlaying(Convert.ToInt32(gamesToFarm.First().AppID));
+
+                    await Task.Delay(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+
+                    if(!await SteamWeb.Instance.RefreshSessionIfNeeded().ConfigureAwait(false))
                     {
                         continue;
                     }
 
-                    List<GameToFarm> gamesToFarm = await m_steamUserWebAPI.GetBadgesToFarm();
-
-                    bool isRunning = (gamesToFarm.Count > 0);
+                    isRunning = await m_steamUserWebAPI.GetGameCardsRemainingForGame(Convert.ToUInt32(gamesToFarm.First().AppID)).ConfigureAwait(false) > 0;
 
                     if(!isRunning)
                     {
-                        m_gamesLibraryHelper.SetGamePlaying(0);
+                        checkForNewGame = true;
                     }
-
-                    while(isRunning && !m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
-                    {
-                        m_gamesLibraryHelper.SetGamePlaying(Convert.ToInt32(gamesToFarm.First().AppID));
-
-                        await Task.Delay(TimeSpan.FromMinutes(5));
-
-                        if(!await SteamWeb.Instance.RefreshSessionIfNeeded())
-                        {
-                            continue;
-                        }
-
-                        isRunning = await m_steamUserWebAPI.GetGameCardsRemainingForGame(Convert.ToUInt32(gamesToFarm.First().AppID)) > 0;
-
-                        if(!isRunning)
-                        {
-                            checkForNewGame = true;
-                        }
-                    }
-
-                    if(!checkForNewGame)
-                    {
-                        await Task.Delay(TimeSpan.FromMinutes(5));
-                    }
-
-                    checkForNewGame = false;
                 }
 
-                Console.WriteLine("Cancelled the CardFarmTask.");
-                m_cardFarmCancellationTokenSource.Dispose();
-            }, m_cardFarmCancellationTokenSource.Token);
+                if(!checkForNewGame)
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+                }
+
+                checkForNewGame = false;
+            }
+
+            Console.WriteLine("Cancelled the CardFarmTask.");
+            m_cardFarmCancellationTokenSource.Dispose();
         }
 
         /// <summary>

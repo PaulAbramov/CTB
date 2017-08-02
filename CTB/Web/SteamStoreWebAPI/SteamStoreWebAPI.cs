@@ -35,36 +35,33 @@ namespace CTB.Web.SteamStoreWebAPI
             int cardsToEarn = 0;
             string responseToAdmin = "";
 
-            await Task.Run(async () =>
+            if(!await SteamWeb.Instance.RefreshSessionIfNeeded().ConfigureAwait(false))
             {
-                if(!await SteamWeb.Instance.RefreshSessionIfNeeded())
-                {
-                    responseToAdmin = "Could not reauthenticate.";
-                }
+                responseToAdmin = "Could not reauthenticate.";
+            }
 
-                cardsToEarn = await GetCardsToEarnFromDiscoveryQueue();
+            cardsToEarn = await GetCardsToEarnFromDiscoveryQueue().ConfigureAwait(false);
 
-                if (cardsToEarn != 0)
+            if (cardsToEarn != 0)
+            {
+                for (int i = 0; i < cardsToEarn; i++)
                 {
-                    for (int i = 0; i < cardsToEarn; i++)
+                    RequestNewDiscoveryQueueResponse discoveryQueue = await GenerateNewDiscoveryQueue().ConfigureAwait(false);
+
+                    foreach (uint appID in discoveryQueue.Queue)
                     {
-                        RequestNewDiscoveryQueueResponse discoveryQueue = await GenerateNewDiscoveryQueue();
+                        string urlToApp = $"http://{SteamWeb.Instance.m_SteamStoreHost}/app/{appID}";
 
-                        foreach (uint appID in discoveryQueue.Queue)
+                        NameValueCollection data = new NameValueCollection()
                         {
-                            string urlToApp = $"http://{SteamWeb.Instance.m_SteamStoreHost}/app/{appID}";
+                            {"sessionid", SteamWeb.Instance.SessionID},
+                            {"appid_to_clear_from_queue", appID.ToString()}
+                        };
 
-                            NameValueCollection data = new NameValueCollection()
-                            {
-                                {"sessionid", SteamWeb.Instance.SessionID},
-                                {"appid_to_clear_from_queue", appID.ToString()}
-                            };
-
-                            string response = await WebHelper.Instance.GetStringFromRequest(urlToApp, data, false);
-                        }
+                        string response = await WebHelper.Instance.GetStringFromRequest(urlToApp, data, false).ConfigureAwait(false);
                     }
                 }
-            });
+            }
 
             if(string.IsNullOrEmpty(responseToAdmin))
             {
@@ -85,7 +82,7 @@ namespace CTB.Web.SteamStoreWebAPI
         {
             string url = $"http://{SteamWeb.Instance.m_SteamStoreHost}/explore?l=english";
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url);
+            string response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
 
             HtmlDocument document = new HtmlDocument();
             document.LoadHtml(response);
@@ -126,7 +123,7 @@ namespace CTB.Web.SteamStoreWebAPI
                     {"queuetype", "0"}
                 };
 
-            string stringResponse = await WebHelper.Instance.GetStringFromRequest(url, data, false);
+            string stringResponse = await WebHelper.Instance.GetStringFromRequest(url, data, false).ConfigureAwait(false);
 
             RequestNewDiscoveryQueueResponse response = JsonConvert.DeserializeObject<RequestNewDiscoveryQueueResponse>(stringResponse);
 

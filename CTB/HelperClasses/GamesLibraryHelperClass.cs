@@ -106,7 +106,7 @@ namespace CTB.HelperClasses
         /// <returns></returns>
         public async Task<string> RedeemKeyResponse(string _keyToActivate)
         {
-            PurchaseResponseCallback activatedResponse = await RedeemKey(_keyToActivate);
+            PurchaseResponseCallback activatedResponse = await RedeemKey(_keyToActivate).ConfigureAwait(false);
 
             return $"Status: {activatedResponse.m_Result}/{activatedResponse.m_PurchaseResultDetail}, {string.Join(",", activatedResponse.m_Items.Select(_key => $"Key: [ {_keyToActivate} ] Game: [ {_key.Key}/{_key.Value} ]").ToArray())}";
         }

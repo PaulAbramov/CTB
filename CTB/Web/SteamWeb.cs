@@ -70,7 +70,7 @@ namespace CTB.Web
         /// <returns></returns>
         public async Task<bool> RefreshSessionIfNeeded()
         {
-            string response = await WebHelper.Instance.GetStringFromRequest("http://steamcommunity.com/my/");
+            string response = await WebHelper.Instance.GetStringFromRequest("http://steamcommunity.com/my/").ConfigureAwait(false);
 
             bool isNotLoggedOn = response.Contains("Sign In");
 
@@ -190,7 +190,7 @@ namespace CTB.Web
         {
             string url = $"https://{m_SteamCommunityHost}/dev/apikey?l=english";
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url);
+            string response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
 
             await SetApiKey(response);
         }
@@ -212,7 +212,7 @@ namespace CTB.Web
                 {"Submit", "Register"}
             };
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false);
+            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false).ConfigureAwait(false);
 
             await SetApiKey(response);
         }
@@ -238,7 +238,7 @@ namespace CTB.Web
             }
             else
             {
-                await RegisterApiKey();
+                await RegisterApiKey().ConfigureAwait(false);
             }
 
             // HTMLAgility without XPATH

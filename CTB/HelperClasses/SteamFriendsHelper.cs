@@ -135,7 +135,7 @@ namespace CTB.HelperClasses
                 SteamID groupID = _steamFriends.GetClanByIndex(i);
                 if(groupID.ConvertToUInt64().Equals(103582791458407475) && _steamFriends.GetClanName(groupID).ToUpper().Contains("XETAS"))
                 {
-                    await _steamUserWebAPI.InviteToGroup(groupID.ToString(), _friendSteamID.ConvertToUInt64().ToString());
+                    await _steamUserWebAPI.InviteToGroup(groupID.ToString(), _friendSteamID.ConvertToUInt64().ToString()).ConfigureAwait(false);
                 }
 
                 if (!string.IsNullOrEmpty(_groupID))
@@ -143,14 +143,14 @@ namespace CTB.HelperClasses
                     string groupID64;
                     if (_groupID.Contains("steamcommunity") && _groupID.Contains("groups"))
                     {
-                        groupID64 = await _steamUserWebAPI.GetGroupIDFromGroupAdress(_groupID);
+                        groupID64 = await _steamUserWebAPI.GetGroupIDFromGroupAdress(_groupID).ConfigureAwait(false);
                     }
                     else
                     {
                         groupID64 = GetGroupID64String(_groupID);
                     }
 
-                    await _steamUserWebAPI.InviteToGroup(groupID64, _friendSteamID.ConvertToUInt64().ToString());
+                    await _steamUserWebAPI.InviteToGroup(groupID64, _friendSteamID.ConvertToUInt64().ToString()).ConfigureAwait(false);
                 }
             }
 

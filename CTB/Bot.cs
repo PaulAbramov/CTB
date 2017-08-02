@@ -218,18 +218,18 @@ namespace CTB
                             Console.WriteLine("Could not login, retrying in 5 seconds...");
                             Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                            loggedon = await SteamWeb.Instance.RefreshSessionIfNeeded();
+                            loggedon = await SteamWeb.Instance.RefreshSessionIfNeeded().ConfigureAwait(false);
                         }
                     }
                     else
                     {
                         Console.WriteLine("Successfully authenticated the user in the web.");
 
-                        await SteamWeb.Instance.RequestAPiKey();
+                        await SteamWeb.Instance.RequestAPiKey().ConfigureAwait(false);
 
-                        await m_steamUserWebAPI.JoinGroupIfNotJoinedAlready(m_steamFriends, 103582791458407475);
+                        await m_steamUserWebAPI.JoinGroupIfNotJoinedAlready(m_steamFriends, 103582791458407475).ConfigureAwait(false);
 
-                        m_cardFarmHelper.StartFarmCards(m_steamClient);
+                        await m_cardFarmHelper.StartFarmCards(m_steamClient).ConfigureAwait(false);
                     }
                     break;
                case EResult.AccountLogonDenied:
@@ -353,7 +353,7 @@ namespace CTB
                 {
                     if(m_acceptFriendRequests)
                     {
-                        await m_steamFriendsHelper.AcceptFriendRequestAndInviteToGroup(m_steamFriends, friend.SteamID,  m_steamUserWebAPI, m_adminGroupToInviteTo);
+                        await m_steamFriendsHelper.AcceptFriendRequestAndInviteToGroup(m_steamFriends, friend.SteamID,  m_steamUserWebAPI, m_adminGroupToInviteTo).ConfigureAwait(false);
                     }
                     else
                     {
@@ -380,7 +380,7 @@ namespace CTB
                 switch(notification)
                 {
                     case ENotification.TRADING:
-                        await m_tradeOfferHelper.CheckTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID);
+                        await m_tradeOfferHelper.CheckTradeOffers(m_steamFriendsHelper, m_steamClient.SteamID).ConfigureAwait(false);
                         break;
                 }
             }
@@ -424,7 +424,7 @@ namespace CTB
                             //  Explore discoveryqueues
                             case "!E":
                             case "!EXPLOREDISCOVERYQUEUES":
-                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, await m_steamStoreWebAPI.ExploreDiscoveryQueues());
+                                m_steamFriends.SendChatMessage(_callback.Sender, EChatEntryType.ChatMsg, await m_steamStoreWebAPI.ExploreDiscoveryQueues().ConfigureAwait(false));
                                 break;
                             //  Set the permission to accept or decline friendrequests
                             case "!AFR":
