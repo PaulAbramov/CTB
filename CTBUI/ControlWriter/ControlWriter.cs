@@ -45,4 +45,13 @@ namespace CTBUI.ControlWriter
         /// </summary>
         public override Encoding Encoding => Encoding.ASCII;
     }
+
+    class test : TextReader
+    {
+        public override string ReadLine()
+        {
+
+            return base.ReadLine();
+        }
+    }
 }

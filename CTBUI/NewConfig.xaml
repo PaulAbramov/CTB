@@ -1,0 +1,49 @@
+﻿<Window x:Class="CTBUI.NewConfig"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CTBUI"
+        mc:Ignorable="d"
+        Title="Create new config" Height="617.549" Width="600" ResizeMode="NoResize">
+    <Grid>
+        <Label Content="BotUsername:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <TextBox x:Name="UsernameTextBox" Height="20" Margin="145,10,10,0" TextWrapping="Wrap" VerticalAlignment="Top" ToolTip="Must be filled."/>
+        <Label Content="BotPassword:" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <TextBox x:Name="PasswordTextBox" Height="20" Margin="145,45,10,0" TextWrapping="Wrap" VerticalAlignment="Top" ToolTip="Must be filled."/>
+        <Label Content="Botname:" HorizontalAlignment="Left" Margin="10,80,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <TextBox x:Name="BotNameTextBox" Height="20" Margin="145,80,10,0" TextWrapping="Wrap" VerticalAlignment="Top" ToolTip="If not set, the accounts name won't be changed"/>
+        <Label Content="Accept Friendrequests:" HorizontalAlignment="Left" Margin="10,115,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <ComboBox x:Name="AcceptFriendRequestsDropDown" Margin="145,115,10,0" VerticalAlignment="Top" Height="20" Padding="6,3,5,3" ToolTip="Choose if friendrequests should be accepted or not. Default is no.">
+            <ComboBoxItem Content="Yes"/>
+            <ComboBoxItem Content="No"/>
+        </ComboBox>
+        <Label Content="Accept Donations:" HorizontalAlignment="Left" Margin="10,150,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <ComboBox x:Name="AcceptDonationsDropDown" Margin="145,150,10,0" VerticalAlignment="Top" Height="20" ToolTip="Choose if donations should be accepted or not. Default is yes.">
+            <ComboBoxItem Content="Yes"/>
+            <ComboBoxItem Content="No"/>
+        </ComboBox>
+        <Label Content="Accept Escrow:" HorizontalAlignment="Left" Margin="10,185,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <ComboBox x:Name="AcceptEscrowDropDown" Margin="145,185,10,0" VerticalAlignment="Top" Height="20" ToolTip="Choose if tradeoffers with an escrow should be accepted or not. Default is no.">
+            <ComboBoxItem Content="Yes"/>
+            <ComboBoxItem Content="No"/>
+        </ComboBox>
+        <Label Content="Accept 1:1 Trades:" HorizontalAlignment="Left" Margin="10,220,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <ComboBox x:Name="Accept1on1DropDown" Margin="145,220,10,0" VerticalAlignment="Top" Height="20" ToolTip="Choose if 1:1 tradeoffers should be accepted or not. Default is yes.">
+            <ComboBoxItem Content="Yes"/>
+            <ComboBoxItem Content="No"/>
+        </ComboBox>
+        <Label Content="Accept 1:2 Trades:" HorizontalAlignment="Left" Margin="10,255,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <ComboBox x:Name="Accept1on2DropDown" Margin="145,255,10,0" VerticalAlignment="Top" Height="20" ToolTip="Choose if 1:2 tradeoffers should be accepted or not. Default is no.">
+            <ComboBoxItem Content="Yes"/>
+            <ComboBoxItem Content="No"/>
+        </ComboBox>
+        <Label Content="Group to invite to:" HorizontalAlignment="Left" Margin="10,290,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <TextBox x:Name="GroupToInvetToTextBox" Height="20" Margin="145,290,10,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Label Content="Admins:" HorizontalAlignment="Left" Margin="10,325,0,0" VerticalAlignment="Top" Height="20" Width="130" Padding="0"/>
+        <TextBox x:Name="AdminsTextBox" Height="20" Margin="145,325,10,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Label Content="Info: &#10;Username and password must be filled, everything else will be set to   &#10;'Group to invite to' takes an adress or the groupID in 32 or 64bit. &#10;    examples: &#10;    - http://steamcommunity.com/groups/xtstc &#10;    - 28886067 or 103582791458407475 &#10; 'Admins' takes one to multiple steamID64s seperated by a comma &#10;    examples: &#10;    - 76561198000479819  &#10;    - 76561198000479819, 76561198138230750, ..." Margin="10,360,10,0" Height="167" VerticalAlignment="Top"/>
+        <Button x:Name="SaveButton" Content="Save" HorizontalAlignment="Left" Margin="100,0,0,20" Width="100" Height="25" VerticalAlignment="Bottom" Click="SaveButton_Click"/>
+        <Button x:Name="CloseButton" Content="Close" HorizontalAlignment="Right" Margin="0,0,100,20" Width="100" Height="25" VerticalAlignment="Bottom" Click="CloseButton_Click"/>
+    </Grid>
+</Window>

@@ -80,7 +80,7 @@ namespace CTBUI
         /// </summary>
         private void PopulateBotList()
         {
-            foreach(string file in Directory.GetFiles(m_pathToFiles + "/Configs"))
+            foreach(string file in Directory.GetFiles("Files/Configs"))
             {
                 if(file.Contains(".json"))
                 {
@@ -141,7 +141,8 @@ namespace CTBUI
 
         private void AddClick(object _sender, RoutedEventArgs _e)
         {
-
+            NewConfig config = new NewConfig();
+            config.Show();
         }
 
         private void RemoveClick(object _sender, RoutedEventArgs _e)
@@ -178,7 +179,7 @@ namespace CTBUI
 
         private void StopClick(object _sender, RoutedEventArgs _e)
         {
-
+            
         }
     }
 }
