@@ -32,6 +32,8 @@ namespace CTB.HelperClasses
         private readonly TradeOfferWebAPI m_tradeOfferWebAPI;
         private readonly MobileHelper m_mobileHelper;
         private readonly BotInfo m_botInfo;
+        private readonly SteamWeb m_steamWeb;
+        private readonly Logger.Logger m_logger;
 
         private bool m_parsingScheduled;
 
@@ -40,11 +42,15 @@ namespace CTB.HelperClasses
         /// </summary>
         /// <param name="_mobileHelper"></param>
         /// <param name="_botInfo"></param>
-        public TradeOfferHelperClass(MobileHelper _mobileHelper, BotInfo _botInfo)
+        /// <param name="_steamWeb"></param>
+        /// <param name="_logger"></param>
+        public TradeOfferHelperClass(MobileHelper _mobileHelper, BotInfo _botInfo, SteamWeb _steamWeb, Logger.Logger _logger)
         {
             m_mobileHelper = _mobileHelper;
-            m_tradeOfferWebAPI = new TradeOfferWebAPI();
+            m_tradeOfferWebAPI = new TradeOfferWebAPI(m_steamWeb, m_logger);
             m_botInfo = _botInfo;
+            m_steamWeb = _steamWeb;
+            m_logger = _logger;
         }
 
         /// <summary>
@@ -133,21 +139,21 @@ namespace CTB.HelperClasses
 
                     if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_Email)
                     {
-                        Console.WriteLine($"Accept the trade offer {tradeOffer.TradeOfferID} via your email");
+                        m_logger.Info($"Accept the trade offer {tradeOffer.TradeOfferID} via your email");
                         tradeOfferHandledCounter++;
 
                         continue;
                     }
 
                     //  If we were not logged on to the web or the authentication failed, go to the next tradeoffer and check it again
-                    if (!await SteamWeb.Instance.RefreshSessionIfNeeded().ConfigureAwait(false))
+                    if (!await m_steamWeb.RefreshSessionIfNeeded().ConfigureAwait(false))
                     {
                         continue;
                     }
 
                     if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_MobileApp)
                     {
-                        m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
+                        m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
                         tradeOfferHandledCounter++;
 
                         continue;
@@ -166,7 +172,7 @@ namespace CTB.HelperClasses
                     //  Check for a tradeoffer from an admin
                     if (await AdminTradeOffer(_steamFriendsHelper, tradeOffer, tradePartnerID).ConfigureAwait(false))
                     {
-                        m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
+                        m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
                         tradeOfferHandledCounter++;
 
                         continue;
@@ -229,10 +235,7 @@ namespace CTB.HelperClasses
             {
                 if (await m_tradeOfferWebAPI.AcceptTradeOffer(_tradeOffer.TradeOfferID).ConfigureAwait(false))
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"Tradeoffer {_tradeOffer.TradeOfferID} was sent by admin {_tradePartnerID.ConvertToUInt64()}");
-                    Console.ForegroundColor = ConsoleColor.White;
-
+                    m_logger.Warning($"Tradeoffer {_tradeOffer.TradeOfferID} was sent by admin {_tradePartnerID.ConvertToUInt64()}");
                 }
 
                 return true;
@@ -312,11 +315,11 @@ namespace CTB.HelperClasses
 
                     if(accepted)
                     {
-                        m_mobileHelper.ConfirmAllTrades(SteamWeb.Instance.SteamLogin, SteamWeb.Instance.SteamLoginSecure, SteamWeb.Instance.SessionID);
+                        m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
                     }
                     else
                     {
-                        Console.WriteLine("tradeoffer couldn't be accepted, return true, so we can handle it next time.");
+                        m_logger.Warning("tradeoffer couldn't be accepted, return true, so we can handle it next time.");
                     }
 
                     return;

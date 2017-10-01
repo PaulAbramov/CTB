@@ -28,6 +28,8 @@ namespace CTB.HelperClasses
     {
         private readonly SteamUserWebAPI m_steamUserWebAPI;
         private readonly GamesLibraryHelperClass m_gamesLibraryHelper;
+        private readonly SteamWeb m_steamWeb;
+        private readonly Logger.Logger m_logger;
 
         private CancellationTokenSource m_cardFarmCancellationTokenSource;
 
@@ -35,10 +37,14 @@ namespace CTB.HelperClasses
         /// Constructor to initialize variables and the class
         /// </summary>
         /// <param name="_gamesLibraryHelper"></param>
-        public CardFarmHelperClass(GamesLibraryHelperClass _gamesLibraryHelper)
+        /// <param name="_steamWeb"></param>
+        /// <param name="_logger"></param>
+        public CardFarmHelperClass(GamesLibraryHelperClass _gamesLibraryHelper, SteamWeb _steamWeb, Logger.Logger _logger)
         {
+            m_steamWeb = _steamWeb;
+            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
 
-            m_steamUserWebAPI = new SteamUserWebAPI();
+            m_logger = _logger;
 
             m_gamesLibraryHelper = _gamesLibraryHelper;
         }
@@ -67,7 +73,7 @@ namespace CTB.HelperClasses
             {
                 while (!m_cardFarmCancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    if (!await SteamWeb.Instance.RefreshSessionIfNeeded().ConfigureAwait(false))
+                    if (!await m_steamWeb.RefreshSessionIfNeeded().ConfigureAwait(false))
                     {
                         continue;
                     }
@@ -94,7 +100,7 @@ namespace CTB.HelperClasses
                             break;
                         }
 
-                        if (!await SteamWeb.Instance.RefreshSessionIfNeeded().ConfigureAwait(false))
+                        if (!await m_steamWeb.RefreshSessionIfNeeded().ConfigureAwait(false))
                         {
                             continue;
                         }
@@ -122,7 +128,7 @@ namespace CTB.HelperClasses
                     checkForNewGame = false;
                 }
 
-                Console.WriteLine("Cancelled the CardFarmTask.");
+                m_logger.Warning("Cancelled the CardFarmTask.");
                 m_cardFarmCancellationTokenSource.Dispose();
             }, m_cardFarmCancellationTokenSource.Token);
         }
@@ -140,7 +146,7 @@ namespace CTB.HelperClasses
             {
                 if (exception.GetType() != typeof(ObjectDisposedException))
                 {
-                    Console.WriteLine(exception);
+                    m_logger.Error(exception.Message);
                     throw;
                 }
             }

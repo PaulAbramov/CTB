@@ -24,16 +24,15 @@ namespace CTB.Web
 {
     public class SteamWeb
     {
-        #region Singleton
-        public static SteamWeb Instance { get; private set; }
-        #endregion
-
         public string SessionID { get; private set; }
         public string SteamLogin { get; private set; }
         public string SteamLoginSecure { get; private set; }
         public string APIKey { get; private set; }
 
+        public WebHelper m_WebHelper;
+
         private SteamClient m_steamClient;
+        private readonly Logger.Logger m_logger;
 
         private readonly SteamUser m_steamUser;
         public readonly string m_SteamCommunityHost = "steamcommunity.com";
@@ -44,21 +43,12 @@ namespace CTB.Web
         /// Initialize the SteamWeb object with the apikey
         /// </summary>
         /// <param name="_steamUser"></param>
-        private SteamWeb(SteamUser _steamUser)
+        /// <param name="_logger"></param>
+        public SteamWeb(SteamUser _steamUser, Logger.Logger _logger)
         {
             m_steamUser = _steamUser;
-        }
-
-        /// <summary>
-        /// Set the instance of the Singleton
-        /// </summary>
-        /// <param name="_steamUser"></param>
-        public static void SetInstance(SteamUser _steamUser)
-        {
-            if (Instance == null)
-            {
-                Instance = new SteamWeb(_steamUser);
-            }
+            m_logger = _logger;
+            m_WebHelper = new WebHelper();
         }
 
         /// <summary>
@@ -70,7 +60,7 @@ namespace CTB.Web
         /// <returns></returns>
         public async Task<bool> RefreshSessionIfNeeded()
         {
-            string response = await WebHelper.Instance.GetStringFromRequest("http://steamcommunity.com/my/").ConfigureAwait(false);
+            string response = await m_WebHelper.GetStringFromRequest("http://steamcommunity.com/my/").ConfigureAwait(false);
 
             bool isNotLoggedOn = response.Contains("Sign In");
 
@@ -84,16 +74,16 @@ namespace CTB.Web
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    m_logger.Error(e.Message);
                     return false;
                 }
 
                 if (string.IsNullOrEmpty(userNonceCallback?.Nonce))
                 {
-                    Console.WriteLine("Usernonce is empty");
+                    m_logger.Warning("Usernonce is empty");
                 }
 
-                Console.WriteLine("Reauthenticating...");
+                m_logger.Warning("Reauthenticating...");
 
                 return AuthenticateUser(m_steamClient, userNonceCallback?.Nonce);
             }
@@ -149,7 +139,7 @@ namespace CTB.Web
                 {
                     if(!e.Message.Contains("403"))
                     {
-                        Console.WriteLine(e);
+                        m_logger.Error(e.Message);
                     }
                     return false;
                 }
@@ -167,16 +157,16 @@ namespace CTB.Web
                 // Create a new instance of the cookieContainer
                 // After loosing connection a second m_domainTable will be created, holding the sessionID from the time we were not authenticated
                 // This will lead to inactive session while requesting API/WebCalls
-                WebHelper.Instance.m_CookieContainer = new CookieContainer();
+               m_WebHelper.m_CookieContainer = new CookieContainer();
 
-                WebHelper.Instance.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamStoreHost));
-                WebHelper.Instance.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamCommunityHost));
+               m_WebHelper.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamStoreHost));
+               m_WebHelper.m_CookieContainer.Add(new Cookie("sessionid", SessionID, string.Empty, m_SteamCommunityHost));
 
-                WebHelper.Instance.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamStoreHost));
-                WebHelper.Instance.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamCommunityHost));
+               m_WebHelper.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamStoreHost));
+               m_WebHelper.m_CookieContainer.Add(new Cookie("steamLogin", SteamLogin, string.Empty, m_SteamCommunityHost));
 
-                WebHelper.Instance.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamStoreHost));
-                WebHelper.Instance.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamCommunityHost));
+               m_WebHelper.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamStoreHost));
+               m_WebHelper.m_CookieContainer.Add(new Cookie("steamLoginSecure", SteamLoginSecure, string.Empty, m_SteamCommunityHost));
 
                 return true;
             }
@@ -190,7 +180,7 @@ namespace CTB.Web
         {
             string url = $"https://{m_SteamCommunityHost}/dev/apikey?l=english";
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
+            string response = await m_WebHelper.GetStringFromRequest(url).ConfigureAwait(false);
 
             await SetApiKey(response);
         }
@@ -212,7 +202,7 @@ namespace CTB.Web
                 {"Submit", "Register"}
             };
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false).ConfigureAwait(false);
+            string response = await m_WebHelper.GetStringFromRequest(url, data, false).ConfigureAwait(false);
 
             await SetApiKey(response);
         }

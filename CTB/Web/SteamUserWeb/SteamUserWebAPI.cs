@@ -32,6 +32,13 @@ namespace CTB.Web.SteamUserWeb
     {
         private const string steamUserInterface = "ISteamUser";
 
+        private readonly SteamWeb m_steamWeb;
+
+        public SteamUserWebAPI(SteamWeb _steamWeb)
+        {
+            m_steamWeb = _steamWeb;
+        }
+
         /// <summary>
         /// Get the profilesummaries for the given steamIDs
         /// </summary>
@@ -41,13 +48,13 @@ namespace CTB.Web.SteamUserWeb
         {
             NameValueCollection data = new NameValueCollection
             {
-                {"key", SteamWeb.Instance.APIKey},
+                {"key", m_steamWeb.APIKey},
                 {"steamids", string.Join(",", Array.ConvertAll(_steamIDs, _steamID => $"{_steamID.ConvertToUInt64()}"))}
             };
 
-            string url = string.Format(SteamWeb.Instance.m_APISteamAddress, steamUserInterface, "GetPlayerSummaries", "v0002");
+            string url = string.Format(m_steamWeb.m_APISteamAddress, steamUserInterface, "GetPlayerSummaries", "v0002");
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url, data).ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url, data).ConfigureAwait(false);
 
             APIResponse<GetPlayerSummariesResponse> summary = JsonConvert.DeserializeObject<APIResponse<GetPlayerSummariesResponse>>(response);
 
@@ -63,13 +70,13 @@ namespace CTB.Web.SteamUserWeb
         {
             NameValueCollection data = new NameValueCollection
             {
-                {"key", SteamWeb.Instance.APIKey},
+                {"key", m_steamWeb.APIKey},
                 {"steamid", _steamID.ConvertToUInt64().ToString()}
             };
 
-            string url = string.Format(SteamWeb.Instance.m_APISteamAddress, steamUserInterface, "GetUserGroupList", "v0001");
+            string url = string.Format(m_steamWeb.m_APISteamAddress, steamUserInterface, "GetUserGroupList", "v0001");
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url, data).ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url, data).ConfigureAwait(false);
 
             APIResponse<GetPlayerGroupListResponse> playerGroupList = JsonConvert.DeserializeObject<APIResponse<GetPlayerGroupListResponse>>(response);
 
@@ -86,7 +93,7 @@ namespace CTB.Web.SteamUserWeb
         /// <returns></returns>
         public async Task<string> GetGroupIDFromGroupAdress(string _url)
         {
-            string response = await WebHelper.Instance.GetStringFromRequest($"{_url}/memberslistxml/?xml=1").ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest($"{_url}/memberslistxml/?xml=1").ConfigureAwait(false);
 
             XmlDocument groupXML = new XmlDocument();
             groupXML.LoadXml(response);
@@ -114,13 +121,13 @@ namespace CTB.Web.SteamUserWeb
                 {"json", "1"},
                 {"type", "groupInvite"},
                 {"group", _groupID},
-                {"sessionID", SteamWeb.Instance.SessionID},
+                {"sessionID", m_steamWeb.SessionID},
                 {"invitee_list", steamIDFormattedIntoArray}
             };
 
             const string groupInviteURL = "https://steamcommunity.com/actions/GroupInvite";
 
-            await WebHelper.Instance.SendWebRequest(groupInviteURL, data, false).ConfigureAwait(false);
+            await m_steamWeb.m_WebHelper.SendWebRequest(groupInviteURL, data, false).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -129,15 +136,15 @@ namespace CTB.Web.SteamUserWeb
         /// <param name="_groupID"></param>
         public async Task JoinGroup(string _groupID)
         {
-            string url = $"https://{SteamWeb.Instance.m_SteamCommunityHost}/gid/{_groupID}";
+            string url = $"https://{m_steamWeb.m_SteamCommunityHost}/gid/{_groupID}";
 
             NameValueCollection data = new NameValueCollection()
             {
-                {"sessionID", SteamWeb.Instance.SessionID},
+                {"sessionID", m_steamWeb.SessionID},
                 {"action", "join"}
             };
 
-            await WebHelper.Instance.SendWebRequest(url, data, false).ConfigureAwait(false);
+            await m_steamWeb.m_WebHelper.SendWebRequest(url, data, false).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -178,9 +185,9 @@ namespace CTB.Web.SteamUserWeb
         /// <returns></returns>
         public async Task<int> GetGameCardsRemainingForGame(uint _appID)
         {
-            string url = $"http://{SteamWeb.Instance.m_SteamCommunityHost}/my/gamecards/{_appID}";
+            string url = $"http://{m_steamWeb.m_SteamCommunityHost}/my/gamecards/{_appID}";
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url).ConfigureAwait(false);
 
             HtmlDocument htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(response);
@@ -199,9 +206,9 @@ namespace CTB.Web.SteamUserWeb
         /// <returns></returns>
         public async Task<List<GameToFarm>> GetBadgesToFarm()
         {
-            string url = $"http://{SteamWeb.Instance.m_SteamCommunityHost}/my/badges/?p=1";
+            string url = $"http://{m_steamWeb.m_SteamCommunityHost}/my/badges/?p=1";
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url).ConfigureAwait(false);
 
             HtmlDocument htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(response);
@@ -236,9 +243,9 @@ namespace CTB.Web.SteamUserWeb
         /// <returns></returns>
         private async Task<List<GameToFarm>> GetBadgesToFarmFromSite(int _site)
         {
-            string url = $"http://{SteamWeb.Instance.m_SteamCommunityHost}/my/badges/?p={_site}";
+            string url = $"http://{m_steamWeb.m_SteamCommunityHost}/my/badges/?p={_site}";
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url).ConfigureAwait(false);
 
             HtmlDocument htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(response);
@@ -415,7 +422,7 @@ namespace CTB.Web.SteamUserWeb
         /// <returns></returns>
         public async Task<InventoryResponse> GetOurSteamInventory()
         {
-            SteamID ourSteamID = new SteamID(Encoding.UTF8.GetString(Convert.FromBase64String(SteamWeb.Instance.SessionID)));
+            SteamID ourSteamID = new SteamID(Encoding.UTF8.GetString(Convert.FromBase64String(m_steamWeb.SessionID)));
 
             return await GetInventory(ourSteamID.ConvertToUInt64(), 753, 6).ConfigureAwait(false);
         }
@@ -428,7 +435,7 @@ namespace CTB.Web.SteamUserWeb
         /// <returns></returns>
         public async Task<InventoryResponse> GetOurCSGOInventory()
         {
-            SteamID ourSteamID = new SteamID(Encoding.UTF8.GetString(Convert.FromBase64String(SteamWeb.Instance.SessionID)));
+            SteamID ourSteamID = new SteamID(Encoding.UTF8.GetString(Convert.FromBase64String(m_steamWeb.SessionID)));
 
             return await GetInventory(ourSteamID.ConvertToUInt64(), 730, 2).ConfigureAwait(false);
         }
@@ -451,9 +458,9 @@ namespace CTB.Web.SteamUserWeb
         {
             try
             {
-                string url = $"http://{SteamWeb.Instance.m_SteamCommunityHost}/inventory/{_steamID}/{_appID}/{_contextID}?l=english&trading=1&count=5000";
+                string url = $"http://{m_steamWeb.m_SteamCommunityHost}/inventory/{_steamID}/{_appID}/{_contextID}?l=english&trading=1&count=5000";
 
-                string response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
+                string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url).ConfigureAwait(false);
 
                 InventoryResponse inventoryResponse = JsonConvert.DeserializeObject<InventoryResponse>(response);
 
@@ -461,7 +468,7 @@ namespace CTB.Web.SteamUserWeb
                 {
                     url += $"&start_assetid={inventoryResponse.LastAssetID}";
 
-                    response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
+                    response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url).ConfigureAwait(false);
 
                     InventoryResponse inventoryResponseMore = JsonConvert.DeserializeObject<InventoryResponse>(response);
 

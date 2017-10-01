@@ -25,6 +25,13 @@ namespace CTB.HelperClasses
     {
         private SteamGuardAccount m_steamGuardAccount;
 
+        private readonly Logger.Logger m_logger;
+
+        public MobileHelper(Logger.Logger _logger)
+        {
+            m_logger = _logger;
+        }
+
         /// <summary>
         /// If the account isn't initialized, check if we have an authfile for this account and deserialize it
         /// If the account is valid create a authcode, else return an empty string
@@ -61,7 +68,7 @@ namespace CTB.HelperClasses
         {
             if (m_steamGuardAccount == null)
             {
-                Console.WriteLine("Bot account does not have 2FA enabled.");
+                m_logger.Warning("Bot account does not have 2FA enabled.");
             }
             else
             {
@@ -81,12 +88,20 @@ namespace CTB.HelperClasses
                     {
                         bool confirmedTrade = m_steamGuardAccount.AcceptConfirmation(confirmation);
 
-                        Console.WriteLine(confirmedTrade ? $"Confirmed {confirmation.Description}, (Confirmation ID #{confirmation.ID})" : $"Could not confirm {confirmation.Description}, (Confirmation ID #{confirmation.ID})");
+                        if(confirmedTrade)
+                        {
+                            m_logger.Info($"Confirmed {confirmation.Description}, (Confirmation ID #{confirmation.ID})");
+
+                        }
+                        else
+                        {
+                            m_logger.Warning($"Could not confirm {confirmation.Description}, (Confirmation ID #{confirmation.ID})");
+                        }
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Mobilehelper: Must Login");
+                    m_logger.Error("Mobilehelper: Must Login");
                 }
             }
         }

@@ -28,6 +28,15 @@ namespace CTB.Web.TradeOffer
     {
         private const string IEconServiceInterface = "IEconService";
 
+        private readonly SteamWeb m_steamWeb;
+        private readonly Logger.Logger m_logger;
+
+        public TradeOfferWebAPI(SteamWeb _steamWeb, Logger.Logger _logger)
+        {
+            m_steamWeb = _steamWeb;
+            m_logger = _logger;
+        }
+
  #region WebCalls
         /// <summary>
         /// This is the actual call to get all tradeoffers we want to see
@@ -52,7 +61,7 @@ namespace CTB.Web.TradeOffer
 
             NameValueCollection data = new NameValueCollection
             {
-                {"key", SteamWeb.Instance.APIKey},
+                {"key", m_steamWeb.APIKey},
                 {"get_sent_offers", BoolToInt(_getSentOffers).ToString()},
                 {"get_received_offers", BoolToInt(_getReceivedOffers).ToString()},
                 {"get_descriptions", BoolToInt(_getDescription).ToString()},
@@ -62,11 +71,11 @@ namespace CTB.Web.TradeOffer
                 {"time_historical_cutoff", _historicalCutOff.ToString()}
             };
 
-            string url = string.Format(SteamWeb.Instance.m_APISteamAddress, IEconServiceInterface, "GetTradeOffers", "v1");
+            string url = string.Format(m_steamWeb.m_APISteamAddress, IEconServiceInterface, "GetTradeOffers", "v1");
 
             try
             {
-                string response = await WebHelper.Instance.GetStringFromRequest(url, data).ConfigureAwait(false);
+                string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url, data).ConfigureAwait(false);
                 APIResponse<GetOffersResponse> offersResponse = JsonConvert.DeserializeObject<APIResponse<GetOffersResponse>>(response);
                 return offersResponse.Response;
             }
@@ -119,16 +128,16 @@ namespace CTB.Web.TradeOffer
         {
             NameValueCollection data = new NameValueCollection
             {
-                {"key", SteamWeb.Instance.APIKey},
+                {"key", m_steamWeb.APIKey},
                 {"tradeofferid", _tradeOfferID},
                 {"language", _language}
             };
 
-            string url = string.Format(SteamWeb.Instance.m_APISteamAddress, IEconServiceInterface, "GetTradeOffer", "v1");
+            string url = string.Format(m_steamWeb.m_APISteamAddress, IEconServiceInterface, "GetTradeOffer", "v1");
 
             try
             {
-                string response = await WebHelper.Instance.GetStringFromRequest(url, data).ConfigureAwait(false);
+                string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url, data).ConfigureAwait(false);
 
                 APIResponse<GetOfferResponse> offerResponse = JsonConvert.DeserializeObject<APIResponse<GetOfferResponse>>(response);
 
@@ -148,14 +157,14 @@ namespace CTB.Web.TradeOffer
         {
             NameValueCollection data = new NameValueCollection
             {
-                {"key", SteamWeb.Instance.APIKey}
+                {"key", m_steamWeb.APIKey}
             };
 
-            string url = string.Format(SteamWeb.Instance.m_APISteamAddress, IEconServiceInterface, "GetTradeOffersSummary", "v1");
+            string url = string.Format(m_steamWeb.m_APISteamAddress, IEconServiceInterface, "GetTradeOffersSummary", "v1");
 
             try
             {
-                string response = await WebHelper.Instance.GetStringFromRequest(url, data).ConfigureAwait(false);
+                string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url, data).ConfigureAwait(false);
 
                 APIResponse<TradeOffersSummaryResponse> tradeOffersSummaryResponse = JsonConvert.DeserializeObject<APIResponse<TradeOffersSummaryResponse>>(response);
 
@@ -181,14 +190,14 @@ namespace CTB.Web.TradeOffer
         {
             NameValueCollection data = new NameValueCollection
             {
-                {"sessionid", SteamWeb.Instance.SessionID},
+                {"sessionid", m_steamWeb.SessionID},
                 {"serverid", "1"},
                 {"tradeofferid", _tradeOfferID}
             };
 
             string referer = $"https://steamcommunity.com/tradeoffer/{_tradeOfferID}";
 
-            string response = await WebHelper.Instance.GetStringFromRequest($"{referer}/accept", data, false, referer).ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest($"{referer}/accept", data, false, referer).ConfigureAwait(false);
 
             TradeOfferAcceptResponse acceptResponse = JsonConvert.DeserializeObject<TradeOfferAcceptResponse>(response);
 
@@ -213,7 +222,7 @@ namespace CTB.Web.TradeOffer
 
             if (acceptedOffer)
             {
-                Console.WriteLine($"Accepted the offer with the id {_tradeOfferID} from the user {_partnerID.ConvertToUInt64()}");
+                m_logger.Info($"Accepted the offer with the id {_tradeOfferID} from the user {_partnerID.ConvertToUInt64()}");
 
                 return true;
             }
@@ -235,7 +244,7 @@ namespace CTB.Web.TradeOffer
 
             if (acceptedOffer)
             {
-                Console.WriteLine($"Accepted offer: {_tradeOfferID}");
+                m_logger.Info($"Accepted offer: {_tradeOfferID}");
 
                 return true;
             }
@@ -256,13 +265,13 @@ namespace CTB.Web.TradeOffer
         {
             NameValueCollection data = new NameValueCollection
             {
-                { "key", SteamWeb.Instance.APIKey },
+                { "key", m_steamWeb.APIKey },
                 { "tradeofferid", _tradeOfferID }
             };
 
-            string url = string.Format(SteamWeb.Instance.m_APISteamAddress, IEconServiceInterface, "DeclineTradeOffer", "v1");
+            string url = string.Format(m_steamWeb.m_APISteamAddress, IEconServiceInterface, "DeclineTradeOffer", "v1");
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false).ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url, data, false).ConfigureAwait(false);
 
             return true;
         }
@@ -280,7 +289,7 @@ namespace CTB.Web.TradeOffer
 
             if (declinedoffer)
             {
-                Console.WriteLine($"Declined the offer with the id {_tradeOfferID} from the user {_partnerID.ConvertToUInt64()}");
+                m_logger.Info($"Declined the offer with the id {_tradeOfferID} from the user {_partnerID.ConvertToUInt64()}");
 
                 return true;
             }
@@ -302,7 +311,7 @@ namespace CTB.Web.TradeOffer
 
             if (declinedoffer)
             {
-                Console.WriteLine($"Declined offer: {_tradeOfferID}");
+                m_logger.Info($"Declined offer: {_tradeOfferID}");
 
                 return true;
             }
@@ -336,7 +345,7 @@ namespace CTB.Web.TradeOffer
 
             NameValueCollection data = new NameValueCollection()
             {
-                {"sessionid", SteamWeb.Instance.SessionID},
+                {"sessionid", m_steamWeb.SessionID},
                 {"serverid", "1"},
                 {"partner", _partnerID},
                 {"tradeoffermessage", _tradeOfferMessage},
@@ -344,10 +353,10 @@ namespace CTB.Web.TradeOffer
                 {"trade_offer_create_params", ""}
             };
 
-            string referer = $"https://{SteamWeb.Instance.m_SteamCommunityHost}/tradeoffer/new";
+            string referer = $"https://{m_steamWeb.m_SteamCommunityHost}/tradeoffer/new";
             string url = $"{referer}/send";
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url, data, false, referer).ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url, data, false, referer).ConfigureAwait(false);
 
             TradeOfferAcceptResponse acceptResponse = JsonConvert.DeserializeObject<TradeOfferAcceptResponse>(response);
 
@@ -368,7 +377,7 @@ namespace CTB.Web.TradeOffer
         public KeyValue GetTradeOffersInterface(bool _getSentOffers, bool _getReceivedOffers, bool _getDescription, bool _activeOnly, bool _historicalOnly)
         {
             // Reuqest the IEconService with our apikey
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, SteamWeb.Instance.APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 // ALWAYS TRY to work with interfaces, because it could go wrong and destroy everything
                 try
@@ -383,7 +392,7 @@ namespace CTB.Web.TradeOffer
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    m_logger.Warning(e.Message);
                     throw;
                 }
 
@@ -397,7 +406,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public KeyValue GetTradeOfferInterface(int _tradeOfferID)
         {
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, SteamWeb.Instance.APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 // ALWAYS TRY to work with interfaces, because it could go wrong and destroy everything
                 try
@@ -408,7 +417,7 @@ namespace CTB.Web.TradeOffer
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    m_logger.Warning(e.Message);
                     throw;
                 }
             }
@@ -420,7 +429,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public KeyValue GetTradeOffersSummaryInterface()
         {
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, SteamWeb.Instance.APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 try
                 {
@@ -429,7 +438,7 @@ namespace CTB.Web.TradeOffer
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    m_logger.Warning(e.Message);
                     throw;
                 }
             }
@@ -442,7 +451,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public KeyValue DeclineTradeOfferInterface(int _tradeOfferID)
         {
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, SteamWeb.Instance.APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 try
                 {
@@ -453,7 +462,7 @@ namespace CTB.Web.TradeOffer
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    m_logger.Warning(e.Message);
                     throw;
                 }
             }
@@ -466,7 +475,7 @@ namespace CTB.Web.TradeOffer
         /// <returns></returns>
         public KeyValue CancelTradeOfferInterface(int _tradeOfferID)
         {
-            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, SteamWeb.Instance.APIKey))
+            using (dynamic IEconService = WebAPI.GetInterface(IEconServiceInterface, m_steamWeb.APIKey))
             {
                 try
                 {
@@ -477,7 +486,7 @@ namespace CTB.Web.TradeOffer
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    m_logger.Warning(e.Message);
                     throw;
                 }
             }
@@ -496,7 +505,7 @@ namespace CTB.Web.TradeOffer
         {
             string url = "http://steamcommunity.com/tradeoffer/" + _tradeofferID;
 
-            string response = await WebHelper.Instance.GetStringFromRequest(url).ConfigureAwait(false);
+            string response = await m_steamWeb.m_WebHelper.GetStringFromRequest(url).ConfigureAwait(false);
 
             // HTMLAgility and XPath would be a chaos here, so Regex is easier and the way to go
             Match ourMatch = Regex.Match(response, @"g_daysMyEscrow(?:[\s=]+)(?<days>[\d]+);", RegexOptions.IgnoreCase);
@@ -509,10 +518,10 @@ namespace CTB.Web.TradeOffer
                 if (steamErrorMatch.Groups.Count > 1)
                 {
                     string steamError = Regex.Replace(steamErrorMatch.Groups[1].Value.Trim(), @"\t|\n|\r", "");
-                    Console.WriteLine(steamError);
+                    m_logger.Error(steamError);
                 }
 
-                Console.WriteLine($"Not logged in, can't retrieve escrow duration for tradeofferID: {_tradeofferID}");
+                m_logger.Error($"Not logged in, can't retrieve escrow duration for tradeofferID: {_tradeofferID}");
 
                 return new TradeOfferEscrowDuration
                 {

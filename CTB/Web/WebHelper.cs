@@ -24,19 +24,7 @@ namespace CTB.Web
 {
     public class WebHelper
     {
-        #region Singleton
-        private static WebHelper m_instance;
-
-        public static WebHelper Instance => m_instance ?? (m_instance = new WebHelper());
-
-        #endregion
-
         public CookieContainer m_CookieContainer;
-
-        private WebHelper()
-        {
-
-        }
 
         /// <summary>
         /// Get the response for the given url and data

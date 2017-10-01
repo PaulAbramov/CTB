@@ -45,6 +45,8 @@ namespace CTB
         private readonly ChatHandler m_chatHandler;
         private readonly GamesLibraryHelperClass m_gamesLibraryHelper;
         private readonly SteamStoreWebAPI m_steamStoreWebAPI;
+        private readonly SteamWeb m_steamWeb;
+        private readonly Logger.Logger m_logger;
 
         private string m_webAPIUserNonce;
         private bool m_acceptFriendRequests;
@@ -117,14 +119,15 @@ namespace CTB
                 ShouldRememberPassword = true
             };
 
-            SteamWeb.SetInstance(m_steamUser);
+            m_logger = new Logger.Logger(_botInfo.Username);
+            m_steamWeb = new SteamWeb(m_steamUser, m_logger);
             m_chatHandler = new ChatHandler(_botInfo);
-            m_mobileHelper = new MobileHelper();
-            m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, _botInfo);
-            m_steamUserWebAPI = new SteamUserWebAPI();
-            m_cardFarmHelper = new CardFarmHelperClass(m_gamesLibraryHelper);
+            m_mobileHelper = new MobileHelper(m_logger);
+            m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, _botInfo, m_steamWeb, m_logger);
+            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
+            m_cardFarmHelper = new CardFarmHelperClass(m_gamesLibraryHelper, m_steamWeb, m_logger);
             m_steamFriendsHelper = new SteamFriendsHelper();
-            m_steamStoreWebAPI = new SteamStoreWebAPI();
+            m_steamStoreWebAPI = new SteamStoreWebAPI(m_steamWeb);
         }
 
         /// <summary>
@@ -142,7 +145,7 @@ namespace CTB
                 return;
             }
 
-            Console.WriteLine("Connecting to Steam...");
+            m_logger.Info("Connecting to Steam...");
 
             // Load the serverlist to get an available server to connect to
             // Prevent from trying to login to offline servers
@@ -152,7 +155,7 @@ namespace CTB
             }
             catch (Exception e)
             {
-                Console.WriteLine("Failed to load serverlist with the message: " + e.Message);
+                m_logger.Warning("Failed to load serverlist with the message: " + e.Message);
             }
 
             FileInfo sentryFileInfo = new FileInfo($"Files/Authfiles/{m_steamUserLogonDetails.Username}.sentryfile");
@@ -179,7 +182,7 @@ namespace CTB
         /// <param name="_callback"></param>
         private void OnConnected(SteamClient.ConnectedCallback _callback)
         {
-            Console.WriteLine("Connected to Steam!");
+            m_logger.Info("Connected to Steam!");
             
             m_steamUser.LogOn(m_steamUserLogonDetails);
         }
@@ -207,25 +210,25 @@ namespace CTB
             switch (_callback.Result)
             {
                 case EResult.OK:
-                    Console.WriteLine("Successfully logged on.");
+                    m_logger.Info("Successfully logged on.");
 
-                    bool loggedon = SteamWeb.Instance.AuthenticateUser(m_steamClient, m_webAPIUserNonce);
+                    bool loggedon = m_steamWeb.AuthenticateUser(m_steamClient, m_webAPIUserNonce);
 
                     if (!loggedon)
                     {
                         while (!loggedon)
                         {
-                            Console.WriteLine("Could not login, retrying in 5 seconds...");
+                            m_logger.Warning("Could not login, retrying in 5 seconds...");
                             Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                            loggedon = await SteamWeb.Instance.RefreshSessionIfNeeded().ConfigureAwait(false);
+                            loggedon = await m_steamWeb.RefreshSessionIfNeeded().ConfigureAwait(false);
                         }
                     }
                     else
                     {
-                        Console.WriteLine("Successfully authenticated the user in the web.");
+                        m_logger.Info("Successfully authenticated the user in the web.");
 
-                        await SteamWeb.Instance.RequestAPiKey().ConfigureAwait(false);
+                        await m_steamWeb.RequestAPiKey().ConfigureAwait(false);
 
                         await m_steamUserWebAPI.JoinGroupIfNotJoinedAlready(m_steamFriends, 103582791458407475).ConfigureAwait(false);
 
@@ -233,11 +236,11 @@ namespace CTB
                     }
                     break;
                case EResult.AccountLogonDenied:
-                    Console.WriteLine($"Enter the auth code sent to the email at: {_callback.EmailDomain}");
+                   m_logger.Warning($"Enter the auth code sent to the email at: {_callback.EmailDomain}");
                     m_steamUserLogonDetails.AuthCode = Console.ReadLine();
                     break;
                 case EResult.InvalidLoginAuthCode:
-                    Console.WriteLine($"Enter the new auth code sent to the email at: {_callback.EmailDomain}");
+                    m_logger.Warning($"Enter the new auth code sent to the email at: {_callback.EmailDomain}");
                     m_steamUserLogonDetails.AuthCode = Console.ReadLine();
                     break;
                 case EResult.AccountLoginDeniedNeedTwoFactor:
@@ -245,14 +248,14 @@ namespace CTB
 
                     if (string.IsNullOrEmpty(twoFactorCode))
                     {
-                        Console.WriteLine("Be sure to link the account to the mobileauthenticator via the bot or add the .maFile to the 2FAFiles directory with the format: 'username.auth'");
-                        Console.WriteLine("If you have your phone already linked enter your code: ");
+                        m_logger.Warning("Be sure to link the account to the mobileauthenticator via the bot or add the .maFile to the 2FAFiles directory with the format: 'username.auth'");
+                        m_logger.Warning("If you have your phone already linked enter your code: ");
                         m_steamUserLogonDetails.TwoFactorCode = Console.ReadLine();
                     }
                     else
                     {
                         m_steamUserLogonDetails.TwoFactorCode = twoFactorCode;
-                        Console.WriteLine("2FA-Code was generated.");
+                        m_logger.Info("2FA-Code was generated.");
                     }
                     break;
                 case EResult.TwoFactorCodeMismatch:
@@ -262,23 +265,23 @@ namespace CTB
 
                     if (string.IsNullOrEmpty(twoFactorCode))
                     {
-                        Console.WriteLine("Be sure to link the account to the mobileauthenticator via the bot");
-                        Console.WriteLine("If you have your phone already linked enter your code: ");
+                        m_logger.Warning("Be sure to link the account to the mobileauthenticator via the bot or add the .maFile to the 2FAFiles directory with the format: 'username.auth'");
+                        m_logger.Warning("If you have your phone already linked enter your code: ");
                         m_steamUserLogonDetails.TwoFactorCode = Console.ReadLine();
                     }
                     else
                     {
                         m_steamUserLogonDetails.TwoFactorCode = twoFactorCode;
-                        Console.WriteLine("2FA-Code was generated.");
+                        m_logger.Info("2FA-Code was generated.");
                     }
                     break;
                 case EResult.RateLimitExceeded:
-                    Console.WriteLine("Account timeout, wait 5 mins and then try again to login.");
+                    m_logger.Error("Account timeout, wait 5 mins and then try again to login.");
                     Thread.Sleep(TimeSpan.FromMinutes(5));
                     break;
 
                 default:
-                    Console.WriteLine($"Unable to logon to Steam: {_callback.Result} / { _callback.ExtendedResult}");
+                    m_logger.Error($"Unable to logon to Steam: {_callback.Result} / { _callback.ExtendedResult}");
                     break;
             }
         }
@@ -289,7 +292,7 @@ namespace CTB
         /// <param name="_callback"></param>
         private void OnMachineAuth(SteamUser.UpdateMachineAuthCallback _callback)
         {
-            Console.WriteLine("Updateing sentryfile...");
+            m_logger.Info("Updateing sentryfile...");
 
             // variables we need later in another scope
             int fileSize;
@@ -328,7 +331,7 @@ namespace CTB
                 SentryFileHash  = sentryHash
             });
 
-            Console.WriteLine("Done updating sentryfile!");
+            m_logger.Info("Done updating sentryfile!");
         }
 
         /// <summary>
@@ -480,7 +483,7 @@ namespace CTB
         /// <param name="_callback"></param>
         private void OnLoggedOff(SteamUser.LoggedOffCallback _callback)
         {
-            Console.WriteLine($"Logged off of Steam: {_callback.Result}");
+            m_logger.Error($"Logged off of Steam: {_callback.Result}");
 
             m_cardFarmHelper.StopCheckFarmCards();
         }
@@ -493,7 +496,7 @@ namespace CTB
         /// <param name="_callback"></param>
         private void OnDisconnected(SteamClient.DisconnectedCallback _callback)
         {
-            Console.WriteLine("Disconnected from Steam, try to connect again in 5 seconds!");
+            m_logger.Warning("Disconnected from Steam, try to connect again in 5 seconds!");
 
             m_cardFarmHelper.StopCheckFarmCards();
 
@@ -507,16 +510,16 @@ namespace CTB
         /// </summary>
         /// <param name="_botInfo"> where we want to check the properties </param>
         /// <returns> true if everything is okay </returns>
-        private static bool CheckForNeededBotInfo(BotInfo _botInfo)
+        private bool CheckForNeededBotInfo(BotInfo _botInfo)
         {
             if(string.IsNullOrEmpty(_botInfo.Username))
             {
-                Console.WriteLine("Username is not set in the config file, please set it!");
+                m_logger.Warning("Username is not set in the config file, please set it!");
                 return false;
             }
             if (string.IsNullOrEmpty(_botInfo.Password))
             {
-                Console.WriteLine("Password is not set in the config file, please set it!");
+                m_logger.Warning("Password is not set in the config file, please set it!");
                 return false;
             }
 
