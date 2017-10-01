@@ -49,7 +49,7 @@ namespace CTB
                 Directory.CreateDirectory("Files/2FAFiles");
             }
 
-            if(!File.Exists(configPath))
+            if (!File.Exists(configPath))
             {
                 Console.WriteLine("There is no config, create one in the rootfolder, add username and password: ");
 
