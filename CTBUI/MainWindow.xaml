@@ -19,9 +19,9 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <TextBox x:Name="BotsOutput" Margin="406,10,10,11" TextWrapping="Wrap" Text="Botoutput here..." VerticalScrollBarVisibility="Auto"/>
-        <Button Content="Add" HorizontalAlignment="Left" Margin="230,10,0,0" VerticalAlignment="Top" Width="100" Height="30" Click="Button_Click"/>
-        <Button Content="Remove" HorizontalAlignment="Left" Margin="230,50,0,0" VerticalAlignment="Top" Width="100" Height="30"/>
-        <Button Content="Start" HorizontalAlignment="Left" Margin="230,90,0,0" VerticalAlignment="Top" Width="100" Height="30"/>
-        <Button Content="Stop" HorizontalAlignment="Left" Margin="230,130,0,0" VerticalAlignment="Top" Width="100" Height="30"/>
+        <Button Content="Add" HorizontalAlignment="Left" Margin="230,10,0,0" VerticalAlignment="Top" Width="100" Height="30" Click="AddClick"/>
+        <Button Content="Remove" HorizontalAlignment="Left" Margin="230,50,0,0" VerticalAlignment="Top" Width="100" Height="30" Click="RemoveClick"/>
+        <Button Content="Start" HorizontalAlignment="Left" Margin="230,90,0,0" VerticalAlignment="Top" Width="100" Height="30" Click="StartClick"/>
+        <Button Content="Stop" HorizontalAlignment="Left" Margin="230,130,0,0" VerticalAlignment="Top" Width="100" Height="30" Click="StopClick"/>
     </Grid>
 </Window>

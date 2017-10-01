@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using CTB;
 using CTB.JsonClasses;
+using CTB.Logger;
 using Newtonsoft.Json;
 
 namespace CTBUI
@@ -13,7 +14,7 @@ namespace CTBUI
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public List<BotListItem> m_ListOfBots = new List<BotListItem>();
 
@@ -28,6 +29,9 @@ namespace CTBUI
             PopulateBotList();
         }
 
+        /// <summary>
+        /// Create the folderstructure for the project
+        /// </summary>
         private void Initialize()
         {
             Console.SetOut(new ControlWriter.ControlWriter(BotsOutput));
@@ -47,17 +51,33 @@ namespace CTBUI
             if (Directory.Exists(releasePath) && Directory.GetFiles(releasePath).Length > 0)
             {
                 m_pathToFiles = releasePath;
+                CreateFolderStructureAndCopyFiles();
             }
             else if(Directory.Exists(debugPath) && Directory.GetFiles(debugPath).Length > 0)
             {
                 m_pathToFiles = debugPath;
+                CreateFolderStructureAndCopyFiles();
             }
-
-            CreateFolderStructureAndCopyFiles();
-
-            Console.WriteLine(m_pathToFiles);
+            else
+            {
+                if (!Directory.Exists("Files/Authfiles"))
+                {
+                    Directory.CreateDirectory("Files/Authfiles");
+                }
+                if (!Directory.Exists("Files/2FAFiles"))
+                {
+                    Directory.CreateDirectory("Files/2FAFiles");
+                }
+                if (!Directory.Exists("Files/Configs"))
+                {
+                    Directory.CreateDirectory("Files/Configs");
+                }
+            }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void PopulateBotList()
         {
             foreach(string file in Directory.GetFiles(m_pathToFiles + "/Configs"))
@@ -71,35 +91,13 @@ namespace CTBUI
             BotList.ItemsSource = m_ListOfBots;
         }
 
-        private void Button_Click(object _sender, RoutedEventArgs _e)
-        {
-            foreach(object botName in BotList.Items)
-            {
-                Task.Run(() =>
-                {
-                    BotListItem newBot = (BotListItem)botName;
-
-                    if (newBot.m_Selected)
-                    {
-                        Console.WriteLine(newBot.m_Name);
-
-                        BotInfo botInfo = JsonConvert.DeserializeObject<BotInfo>(File.ReadAllText(m_pathToFiles + "/Configs/" + newBot.m_Name + ".json"));
-
-                        Bot bot = new Bot(botInfo);
-
-                        bot.Start();
-                    }
-                });
-            }
-        }
-
         /// <summary>
         /// TODO rework and just split the path and get the item at the position
         /// </summary>
         /// <param name="_path"></param>
         /// <param name="_index"></param>
         /// <returns></returns>
-        private string GetParentPathAtPosition(string _path, int _index)
+        private static string GetParentPathAtPosition(string _path, int _index)
         {
             string path = _path;
 
@@ -139,6 +137,48 @@ namespace CTBUI
                     }
                 }
             }
+        }
+
+        private void AddClick(object _sender, RoutedEventArgs _e)
+        {
+
+        }
+
+        private void RemoveClick(object _sender, RoutedEventArgs _e)
+        {
+
+        }
+
+        /// <summary>
+        /// TODO maybe make Start async
+        /// </summary>
+        /// <param name="_sender"></param>
+        /// <param name="_e"></param>
+        private void StartClick(object _sender, RoutedEventArgs _e)
+        {
+            foreach (object botName in BotList.Items)
+            {
+                Task.Run(() =>
+                {
+                    BotListItem newBot = (BotListItem)botName;
+
+                    if (newBot.m_Selected)
+                    {
+                        Console.WriteLine(newBot.m_Name);
+
+                        BotInfo botInfo = JsonConvert.DeserializeObject<BotInfo>(File.ReadAllText(m_pathToFiles + "/Configs/" + newBot.m_Name + ".json"));
+
+                        Bot bot = new Bot(botInfo);
+
+                        bot.Start();
+                    }
+                });
+            }
+        }
+
+        private void StopClick(object _sender, RoutedEventArgs _e)
+        {
+
         }
     }
 }

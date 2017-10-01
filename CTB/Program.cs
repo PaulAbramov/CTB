@@ -48,8 +48,12 @@ namespace CTB
             {
                 Directory.CreateDirectory("Files/2FAFiles");
             }
+            if (!Directory.Exists("Files/Configs"))
+            {
+                Directory.CreateDirectory("Files/Configs");
+            }
 
-            if(!File.Exists(configPath))
+            if (!File.Exists(configPath))
             {
                 Console.WriteLine("There is no config, create one in the rootfolder, add username and password: ");
 
