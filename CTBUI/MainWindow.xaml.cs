@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace CTBUI
     /// </summary>
     public partial class MainWindow
     {
-        public List<BotListItem> m_ListOfBots = new List<BotListItem>();
+        public ObservableCollection<BotListItem> m_ListOfBots = new ObservableCollection<BotListItem>();
 
         private string m_pathToFiles;
 
@@ -80,6 +81,8 @@ namespace CTBUI
         /// </summary>
         private void PopulateBotList()
         {
+            m_ListOfBots.Clear();
+
             foreach(string file in Directory.GetFiles("Files/Configs"))
             {
                 if(file.Contains(".json"))
@@ -143,11 +146,21 @@ namespace CTBUI
         {
             NewConfig config = new NewConfig();
             config.Show();
+
+            config.Closed += (_object, _args) => { PopulateBotList(); };
         }
 
         private void RemoveClick(object _sender, RoutedEventArgs _e)
         {
+            foreach(object bot in BotList.Items)
+            {
+                if(((BotListItem)bot).m_Selected)
+                {
+                    File.Delete($"Files/Configs/{((BotListItem) bot).m_Name}.json");
+                }
+            }
 
+            PopulateBotList();
         }
 
         /// <summary>
