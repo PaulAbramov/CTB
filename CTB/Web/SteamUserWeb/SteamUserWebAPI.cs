@@ -33,10 +33,12 @@ namespace CTB.Web.SteamUserWeb
         private const string steamUserInterface = "ISteamUser";
 
         private readonly SteamWeb m_steamWeb;
+        private readonly Logger.Logger m_logger;
 
-        public SteamUserWebAPI(SteamWeb _steamWeb)
+        public SteamUserWebAPI(SteamWeb _steamWeb, Logger.Logger _logger)
         {
             m_steamWeb = _steamWeb;
+            m_logger = _logger;
         }
 
         /// <summary>
@@ -481,7 +483,7 @@ namespace CTB.Web.SteamUserWeb
             }
             catch (Exception e)
             {
-                Console.WriteLine($"GetInventory : {e}");
+                m_logger.Error($"GetInventory : {e}");
             }
             
             return new InventoryResponse();
