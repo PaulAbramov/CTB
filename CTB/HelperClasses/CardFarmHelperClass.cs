@@ -42,7 +42,7 @@ namespace CTB.HelperClasses
         public CardFarmHelperClass(GamesLibraryHelperClass _gamesLibraryHelper, SteamWeb _steamWeb, Logger.Logger _logger)
         {
             m_steamWeb = _steamWeb;
-            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
+            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb, _logger);
 
             m_logger = _logger;
 
