@@ -124,7 +124,7 @@ namespace CTB
             m_chatHandler = new ChatHandler(_botInfo);
             m_mobileHelper = new MobileHelper(m_logger);
             m_tradeOfferHelper = new TradeOfferHelperClass(m_mobileHelper, _botInfo, m_steamWeb, m_logger);
-            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb);
+            m_steamUserWebAPI = new SteamUserWebAPI(m_steamWeb, m_logger);
             m_cardFarmHelper = new CardFarmHelperClass(m_gamesLibraryHelper, m_steamWeb, m_logger);
             m_steamFriendsHelper = new SteamFriendsHelper();
             m_steamStoreWebAPI = new SteamStoreWebAPI(m_steamWeb);
