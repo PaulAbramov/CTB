@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CTBUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="478.691" Width="754.109">
+        Title="MainWindow" Height="478.691" Width="754.109" Closing="Window_Closing">
     <Grid>
         <ListBox x:Name="BotList" HorizontalAlignment="Left" Margin="10,10,0,10" Width="200" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
@@ -18,7 +18,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <TextBox x:Name="BotsOutput" Margin="406,10,10,11" TextWrapping="Wrap" Text="Botoutput here..." VerticalScrollBarVisibility="Auto"/>
+        <TextBox x:Name="BotsOutput" Margin="406,10,10,11" TextWrapping="Wrap" Text="Botoutput here..." VerticalScrollBarVisibility="Auto" TextChanged="BotsOutput_TextChanged"/>
         <Button Content="Add" HorizontalAlignment="Left" Margin="230,10,0,0" VerticalAlignment="Top" Width="100" Height="30" Click="AddClick"/>
         <Button Content="Remove" HorizontalAlignment="Left" Margin="230,50,0,0" VerticalAlignment="Top" Width="100" Height="30" Click="RemoveClick"/>
         <Button Content="Start" HorizontalAlignment="Left" Margin="230,90,0,0" VerticalAlignment="Top" Width="100" Height="30" Click="StartClick"/>

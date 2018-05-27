@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using CTB;
 using CTB.JsonClasses;
-using CTB.Logger;
 using CTBUI.Properties;
 using Newtonsoft.Json;
 
@@ -19,6 +18,9 @@ namespace CTBUI
     public partial class MainWindow
     {
         public ObservableCollection<BotListItem> m_ListOfBots = new ObservableCollection<BotListItem>();
+
+        private readonly Dictionary<string, Bot> m_runningBotDictionary = new Dictionary<string, Bot>();
+        private readonly Dictionary<string, Task> m_runningTasks = new Dictionary<string, Task>();
 
         private string m_pathToFiles;
 
@@ -170,12 +172,14 @@ namespace CTBUI
         /// </summary>
         /// <param name="_sender"></param>
         /// <param name="_e"></param>
-        private void RemoveClick(object _sender, RoutedEventArgs _e)
+        private async void RemoveClick(object _sender, RoutedEventArgs _e)
         {
             foreach(object bot in BotList.Items)
             {
                 if(((BotListItem)bot).m_Selected)
                 {
+                    await StopBotAndDisposeTask(((BotListItem)bot).m_Name).ConfigureAwait(false);
+
                     File.Delete($"{Settings.Default.ConfigsPath}{((BotListItem) bot).m_Name}.json");
                 }
             }
@@ -192,27 +196,80 @@ namespace CTBUI
         {
             foreach (object botName in BotList.Items)
             {
-                Task.Run(() =>
+                BotListItem newBot = (BotListItem)botName;
+                if (newBot.m_Selected && !m_runningTasks.ContainsKey(newBot.m_Name))
                 {
-                    BotListItem newBot = (BotListItem)botName;
-
-                    if (newBot.m_Selected)
+                    m_runningTasks.Add(newBot.m_Name, Task.Run(() =>
                     {
-                        Console.WriteLine(newBot.m_Name);
-
                         BotInfo botInfo = JsonConvert.DeserializeObject<BotInfo>(File.ReadAllText(Settings.Default.ConfigsPath + newBot.m_Name + ".json"));
 
-                        Bot bot = new Bot(botInfo);
+                        if (!m_runningBotDictionary.ContainsKey(botInfo.Username))
+                        {
+                            Bot bot = new Bot(botInfo);
 
-                        bot.Start();
-                    }
-                });
+                            m_runningBotDictionary.Add(botInfo.Username, bot);
+
+                            m_ListOfBots.First(_bot => _bot.m_Name == newBot.m_Name).m_Status = "online";
+
+                            bot.Start();
+                        }
+                    }));
+                }
             }
         }
 
-        private void StopClick(object _sender, RoutedEventArgs _e)
+        private async void StopClick(object _sender, RoutedEventArgs _e)
         {
-	        string test = Console.ReadLine();
+            foreach (object botName in BotList.Items)
+            {
+                BotListItem botToStop = (BotListItem)botName;
+
+                if (botToStop.m_Selected)
+                {
+                    await StopBotAndDisposeTask(botToStop.m_Name).ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// If the window gets closed we want to stop every bot and dispose every task
+        /// </summary>
+        /// <param name="_sender"></param>
+        /// <param name="_e"></param>
+        private async void Window_Closing(object _sender, System.ComponentModel.CancelEventArgs _e)
+        {
+            foreach (object botName in BotList.Items)
+            {
+                BotListItem botToStop = (BotListItem)botName;
+
+                await StopBotAndDisposeTask(botToStop.m_Name).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Stop the named bot and dispose the named task
+        /// </summary>
+        /// <param name="_botName"></param>
+        private async Task StopBotAndDisposeTask(string _botName)
+        {
+            if (m_runningBotDictionary.ContainsKey(_botName))
+            {
+                m_runningBotDictionary[_botName].Stop();
+                m_runningBotDictionary.Remove(_botName);
+
+                await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+            }
+
+            if (m_runningTasks.ContainsKey(_botName))
+            {
+                m_runningTasks[_botName].Dispose();
+                m_runningTasks.Remove(_botName);
+            }
+        }
+
+        private void BotsOutput_TextChanged(object _sender, System.Windows.Controls.TextChangedEventArgs _e)
+        {
+            BotsOutput.ScrollToEnd();
         }
     }
 }
