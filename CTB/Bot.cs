@@ -56,6 +56,9 @@ namespace CTB
         private readonly string m_adminGroupToInviteTo;
         private readonly string[] m_admins;
 
+        private bool m_disconnectRequested;
+        private bool m_keepRunning = true;
+
         /// <summary>
         /// initialize the Bot
         /// </summary>
@@ -102,9 +105,6 @@ namespace CTB
             m_callbackManager.Subscribe<NotificationCallback>(OnNotifications);
             #endregion
             #endregion
-
-            // Check if all needed informations are given
-            m_neededInfosAreGiven = CheckForNeededBotInfo(_botInfo);
 
             m_botName = _botInfo.BotName;
             m_admins = _botInfo.Admins;
@@ -169,7 +169,7 @@ namespace CTB
             m_steamClient.Connect();
 
             // After a successful login check every second if we have a callback returned to us
-            while(true)
+            while(m_keepRunning)
             {
                 m_callbackManager.RunWaitCallbacks(TimeSpan.FromSeconds(1));
             }
@@ -496,34 +496,33 @@ namespace CTB
         /// <param name="_callback"></param>
         private void OnDisconnected(SteamClient.DisconnectedCallback _callback)
         {
-            m_logger.Warning("Disconnected from Steam, try to connect again in 5 seconds!");
+            if (m_disconnectRequested)
+            {
+                m_logger.Warning("Disconnected from Steam, it was requested!");
+                m_disconnectRequested = false;
+            }
+            else
+            {
+                m_logger.Warning("Disconnected from Steam, try to connect again in 5 seconds!");
 
-            m_cardFarmHelper.StopCheckFarmCards();
+                m_cardFarmHelper.StopCheckFarmCards();
 
-            Thread.Sleep(TimeSpan.FromSeconds(5));
+                Thread.Sleep(TimeSpan.FromSeconds(5));
 
-            m_steamClient.Connect();
+                m_steamClient.Connect();
+            }
         }
 
         /// <summary>
-        /// Check all properties of the passed botinfo so we all important details we need are set
+        /// We want to stop the bot, therefore we have to logout and disconnect from steam
         /// </summary>
-        /// <param name="_botInfo"> where we want to check the properties </param>
-        /// <returns> true if everything is okay </returns>
-        private bool CheckForNeededBotInfo(BotInfo _botInfo)
+        public void Stop()
         {
-            if(string.IsNullOrEmpty(_botInfo.Username))
-            {
-                m_logger.Warning("Username is not set in the config file, please set it!");
-                return false;
-            }
-            if (string.IsNullOrEmpty(_botInfo.Password))
-            {
-                m_logger.Warning("Password is not set in the config file, please set it!");
-                return false;
-            }
-
-            return true;
+            m_keepRunning = false;
+            m_disconnectRequested = true;
+            m_logger.Warning($"Stopping Bot");
+            m_steamUser.LogOff();
+            m_steamClient.Disconnect();
         }
     }
 }
