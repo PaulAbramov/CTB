@@ -153,7 +153,7 @@ namespace CTB.HelperClasses
 
                     if (tradeOffer.ConfirmationMethod == ETradeOfferConfirmationMethod.ETradeOfferConfirmationMethod_MobileApp)
                     {
-                        m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
+                        await m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID).ConfigureAwait(false);
                         tradeOfferHandledCounter++;
 
                         continue;
@@ -172,7 +172,7 @@ namespace CTB.HelperClasses
                     //  Check for a tradeoffer from an admin
                     if (await AdminTradeOffer(_steamFriendsHelper, tradeOffer, tradePartnerID).ConfigureAwait(false))
                     {
-                        m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
+                        await m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID).ConfigureAwait(false);
                         tradeOfferHandledCounter++;
 
                         continue;
@@ -324,7 +324,7 @@ namespace CTB.HelperClasses
 
                     if(accepted)
                     {
-                        m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID);
+                        await m_mobileHelper.ConfirmAllTrades(m_steamWeb.SteamLogin, m_steamWeb.SteamLoginSecure, m_steamWeb.SessionID).ConfigureAwait(false);
                     }
                     else
                     {

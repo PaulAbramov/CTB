@@ -15,6 +15,7 @@ Written by Paul "Xetas" Abramov
 using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SteamAuth;
 using SteamKit2;
@@ -64,7 +65,7 @@ namespace CTB.HelperClasses
         /// Pass the sessionID because we need it aswell, generate a uint64 SteamID from the SessionID, without this we can't fetch the confirmations
         /// With these values we can get all confirmations and accept or deny them, without it will throw errors
         /// </summary>
-        public void ConfirmAllTrades(string _steamLogin, string _steamLoginSecure, string _sessionID)
+        public async Task ConfirmAllTrades(string _steamLogin, string _steamLoginSecure, string _sessionID)
         {
             if (m_steamGuardAccount == null)
             {
@@ -80,7 +81,17 @@ namespace CTB.HelperClasses
                     SteamID = new SteamID(Encoding.UTF8.GetString(Convert.FromBase64String(_sessionID))).ConvertToUInt64()
                 };
 
-                Confirmation[] confirmations = m_steamGuardAccount.FetchConfirmations();
+                bool hasToRelog = false;
+                Confirmation[] confirmations = null;
+
+                try
+                {
+                    confirmations = await m_steamGuardAccount.FetchConfirmationsAsync().ConfigureAwait(false);
+                }
+                catch (SteamGuardAccount.WGTokenInvalidException exception)
+                {
+                    hasToRelog = true;
+                }
 
                 if (confirmations != null)
                 {
@@ -88,20 +99,22 @@ namespace CTB.HelperClasses
                     {
                         bool confirmedTrade = m_steamGuardAccount.AcceptConfirmation(confirmation);
 
-                        if(confirmedTrade)
+                        if (confirmedTrade)
                         {
-                            m_logger.Info($"Confirmed {confirmation.Description}, (Confirmation ID #{confirmation.ID})");
-
+                            m_logger.Info($"Confirmed {confirmation.Key}, {confirmation.IntType}/{confirmation.Creator}(Confirmation ID #{confirmation.ID})");
                         }
                         else
                         {
-                            m_logger.Warning($"Could not confirm {confirmation.Description}, (Confirmation ID #{confirmation.ID})");
+                            m_logger.Warning($"Could not confirm {confirmation.Key}, (Confirmation ID #{confirmation.ID})");
                         }
                     }
                 }
                 else
                 {
-                    m_logger.Error("Mobilehelper: Must Login");
+                    if (hasToRelog)
+                    {
+                        await m_steamGuardAccount.RefreshSessionAsync().ConfigureAwait(false);
+                    }
                 }
             }
         }
