@@ -51,7 +51,6 @@ namespace CTB
         private string m_webAPIUserNonce;
         private bool m_acceptFriendRequests;
 
-        private readonly bool m_neededInfosAreGiven;
         private readonly string m_botName;
         private readonly string m_adminGroupToInviteTo;
         private readonly string[] m_admins;
@@ -139,12 +138,6 @@ namespace CTB
         /// </summary>
         public void Start()
         {
-            if(!m_neededInfosAreGiven)
-            {
-                Console.ReadKey();
-                return;
-            }
-
             m_logger.Info("Connecting to Steam...");
 
             // Load the serverlist to get an available server to connect to
