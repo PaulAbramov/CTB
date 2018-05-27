@@ -288,6 +288,15 @@ namespace CTB.HelperClasses
                 List<TradeOfferItemDescription> ourItems = FillItemsList(_tradeOffer.ItemsToGive, _offersResponse, ItemType.TRADING_CARD);
                 List<TradeOfferItemDescription> theirItems = FillItemsList(_tradeOffer.ItemsToReceive, _offersResponse, ItemType.TRADING_CARD | ItemType.FOIL_TRADING_CARD);
 
+				if(ourItems == null || theirItems == null)
+                {
+                    m_logger.Error("Some item returned null, we can't proceed with the trade.");
+
+                    await m_tradeOfferWebAPI.DeclineTradeofferShortMessage(_tradeOffer.TradeOfferID).ConfigureAwait(false);
+
+                    return;
+                }
+
                 int ourItemsCount = ourItems.Count;
 
                 // Check 1:2 Trade
@@ -360,7 +369,13 @@ namespace CTB.HelperClasses
             {
                 if (item.AppID == "753")
                 {
-                    TradeOfferItemDescription itemWithDescription = _offersResponse.Descriptions.First(_itemDescription => _itemDescription.ClassID == item.ClassID && _itemDescription.InstanceID == item.InstanceID);
+                    TradeOfferItemDescription itemWithDescription = _offersResponse.Descriptions.FirstOrDefault(_itemDescription => _itemDescription.ClassID == item.ClassID && _itemDescription.InstanceID == item.InstanceID);
+
+					if(itemWithDescription == null)
+                    {
+                        m_logger.Error($"Item with the classid {item.ClassID} and assetid {item.AssetID} could not be found return null.");
+                        return null;
+                    }
 
                     Array checkTypeValues = Enum.GetValues(typeof(ItemType));
 

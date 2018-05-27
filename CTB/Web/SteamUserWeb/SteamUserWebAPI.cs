@@ -33,10 +33,12 @@ namespace CTB.Web.SteamUserWeb
         private const string steamUserInterface = "ISteamUser";
 
         private readonly SteamWeb m_steamWeb;
+        private readonly Logger.Logger m_logger;
 
-        public SteamUserWebAPI(SteamWeb _steamWeb)
+        public SteamUserWebAPI(SteamWeb _steamWeb, Logger.Logger _logger)
         {
             m_steamWeb = _steamWeb;
+            m_logger = _logger;
         }
 
         /// <summary>
@@ -200,8 +202,6 @@ namespace CTB.Web.SteamUserWeb
         /// Get the last node with the class "pagelink"
         /// If there is one, parse it into a string and overwrite the pages variable
         /// For the amount of sites get the list of games which we can farm and return the list
-        /// 
-        /// 
         /// </summary>
         /// <returns></returns>
         public async Task<List<GameToFarm>> GetBadgesToFarm()
@@ -225,7 +225,7 @@ namespace CTB.Web.SteamUserWeb
 
             List<GameToFarm> gamesToFarm = new List<GameToFarm>();
 
-            for(int i = 0; i < pages; i++)
+            for(int i = 1; i <= pages; i++)
             {
                 //TODO multiple same entries shouldn't make any problems, but make sure they don't
                 gamesToFarm.AddRange(await GetBadgesToFarmFromSite(i).ConfigureAwait(false));
@@ -483,7 +483,7 @@ namespace CTB.Web.SteamUserWeb
             }
             catch (Exception e)
             {
-                Console.WriteLine($"GetInventory : {e}");
+                m_logger.Error($"GetInventory : {e}");
             }
             
             return new InventoryResponse();

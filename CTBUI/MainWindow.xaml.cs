@@ -26,16 +26,28 @@ namespace CTBUI
             InitializeComponent();
 
             Initialize();
+        }
 
+        /// <summary>
+        /// Set the itemsource to our observableCollection so it updates if there are changes to the configs
+        /// Create the Folderstructure and add the bots to the list
+        /// </summary>
+        private void Initialize()
+        {
+            BotList.ItemsSource = m_ListOfBots;
+
+            CreateFolderStructure();
+            
             PopulateBotList();
         }
 
         /// <summary>
         /// Create the folderstructure for the project
         /// </summary>
-        private void Initialize()
+        private void CreateFolderStructure()
         {
             Console.SetOut(new ControlWriter.ControlWriter(BotsOutput));
+			Console.SetIn(new ControlReader.ControlReader());
 
             if (!Directory.Exists("Files"))
             {
@@ -77,7 +89,8 @@ namespace CTBUI
         }
 
         /// <summary>
-        /// 
+        /// Clear the list so we do not have multiple same entries
+        /// Add every config to the list
         /// </summary>
         private void PopulateBotList()
         {
@@ -90,8 +103,6 @@ namespace CTBUI
                     m_ListOfBots.Add(new BotListItem{m_Name = file.Split('\\').Last().Split('.')[0], m_Selected = false, m_Status = "offline"});
                 }
             }
-
-            BotList.ItemsSource = m_ListOfBots;
         }
 
         /// <summary>
@@ -114,8 +125,6 @@ namespace CTBUI
 
         /// <summary>
         /// Create the topfolderstructure and copy all files from these into our folderstructure
-        /// 
-        /// TODO build it recursively?
         /// </summary>
         private void CreateFolderStructureAndCopyFiles()
         {
@@ -142,6 +151,12 @@ namespace CTBUI
             }
         }
 
+        /// <summary>
+        /// open the window for a new config
+        /// if the window gets closed update the list again
+        /// </summary>
+        /// <param name="_sender"></param>
+        /// <param name="_e"></param>
         private void AddClick(object _sender, RoutedEventArgs _e)
         {
             NewConfig config = new NewConfig();
@@ -150,6 +165,11 @@ namespace CTBUI
             config.Closed += (_object, _args) => { PopulateBotList(); };
         }
 
+        /// <summary>
+        /// go trough every selected bot and delete the files
+        /// </summary>
+        /// <param name="_sender"></param>
+        /// <param name="_e"></param>
         private void RemoveClick(object _sender, RoutedEventArgs _e)
         {
             foreach(object bot in BotList.Items)
@@ -192,7 +212,7 @@ namespace CTBUI
 
         private void StopClick(object _sender, RoutedEventArgs _e)
         {
-            
+	        string test = Console.ReadLine();
         }
     }
 }
