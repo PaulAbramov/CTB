@@ -12,7 +12,7 @@
                 <DataTemplate>
                     <DockPanel>
                         <CheckBox IsChecked="{Binding m_Selected}" Padding="5,0"/>
-                        <TextBlock Text="{Binding m_Name}" Padding="5,0" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="50"/>
+                        <TextBlock Text="{Binding m_Name}" Padding="5,0" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="150"/>
                         <TextBlock Text="{Binding m_Status}" Padding="5,0" HorizontalAlignment="Right" VerticalAlignment="Center" MaxWidth="50"/>
                     </DockPanel>
                 </DataTemplate>
