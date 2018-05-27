@@ -26,7 +26,6 @@ namespace CTB.Web.SteamStoreWebAPI
     {
         private readonly SteamWeb m_steamWeb;
 
-
         public SteamStoreWebAPI(SteamWeb _steamWeb)
         {
             m_steamWeb = _steamWeb;

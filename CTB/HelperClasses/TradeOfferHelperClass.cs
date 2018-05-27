@@ -49,8 +49,8 @@ namespace CTB.HelperClasses
             m_mobileHelper = _mobileHelper;
             m_steamWeb = _steamWeb;
             m_logger = _logger;
-            m_tradeOfferWebAPI = new TradeOfferWebAPI(m_steamWeb, m_logger);
             m_botInfo = _botInfo;
+            m_tradeOfferWebAPI = new TradeOfferWebAPI(m_steamWeb, m_logger);
         }
 
         /// <summary>
@@ -288,7 +288,7 @@ namespace CTB.HelperClasses
                 List<TradeOfferItemDescription> ourItems = FillItemsList(_tradeOffer.ItemsToGive, _offersResponse, ItemType.TRADING_CARD);
                 List<TradeOfferItemDescription> theirItems = FillItemsList(_tradeOffer.ItemsToReceive, _offersResponse, ItemType.TRADING_CARD | ItemType.FOIL_TRADING_CARD);
 
-                if(ourItems == null || theirItems == null)
+				if(ourItems == null || theirItems == null)
                 {
                     m_logger.Error("Some item returned null, we can't proceed with the trade.");
 
@@ -371,7 +371,7 @@ namespace CTB.HelperClasses
                 {
                     TradeOfferItemDescription itemWithDescription = _offersResponse.Descriptions.FirstOrDefault(_itemDescription => _itemDescription.ClassID == item.ClassID && _itemDescription.InstanceID == item.InstanceID);
 
-                    if(itemWithDescription == null)
+					if(itemWithDescription == null)
                     {
                         m_logger.Error($"Item with the classid {item.ClassID} and assetid {item.AssetID} could not be found return null.");
                         return null;
