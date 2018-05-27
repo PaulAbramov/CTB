@@ -47,10 +47,10 @@ namespace CTB.HelperClasses
         public TradeOfferHelperClass(MobileHelper _mobileHelper, BotInfo _botInfo, SteamWeb _steamWeb, Logger.Logger _logger)
         {
             m_mobileHelper = _mobileHelper;
-            m_tradeOfferWebAPI = new TradeOfferWebAPI(m_steamWeb, m_logger);
-            m_botInfo = _botInfo;
             m_steamWeb = _steamWeb;
             m_logger = _logger;
+            m_botInfo = _botInfo;
+            m_tradeOfferWebAPI = new TradeOfferWebAPI(m_steamWeb, m_logger);
         }
 
         /// <summary>
