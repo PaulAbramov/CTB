@@ -12,47 +12,38 @@ Written by Paul "Xetas" Abramov
 
 */
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 
 namespace CTBUI.ControlReader
 {
 	public class ControlReader : TextReader
 	{
+	    private readonly TextBox m_textBox;
+
+        public ControlReader(TextBox _textBox)
+        {
+            m_textBox = _textBox;
+        }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Open the inputwindow and get the text onclose
+        /// </summary>
+        /// <returns></returns>
 		public override string ReadLine()
-		{
-			AllocConsole();
+        {
+            string lastline = m_textBox.Text.Split('\n').LastOrDefault();
 
-			//string test = Console.ReadLine();
-			string test2 = base.ReadLine();
+            InputWindow input = new InputWindow
+            {
+                OutputText = {Text = lastline}
+            };
 
-			return test2;
+            input.ShowDialog();
 
-			//bool ready = false;
-			//
-			//Task<string> test = Task.Run(() =>
-			//{
-			//	InputWindow input = new InputWindow();
-			//
-			//	input.Show();
-			//
-			//	input.OkayButton.Click += (_sender, _args) => { ready = true; };
-			//
-			//	return input.InputText.Text;
-			//});
-			//
-			//test.Wait();
-		}
+			return input.InputText.Text;
+        }
 	}
-
-	// TODO check writeline for string and open a window, let the user enter it and click the button, then on readline read the text and close the window
 }

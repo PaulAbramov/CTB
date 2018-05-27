@@ -18,6 +18,7 @@ using System.Windows.Controls;
 
 namespace CTBUI.ControlWriter
 {
+    /// <inheritdoc />
     /// <summary>
     /// With this class we are able to redirect the Console.Writeline to our textbox
     /// </summary>
@@ -40,6 +41,7 @@ namespace CTBUI.ControlWriter
             m_textBox.Dispatcher.Invoke(() => { m_textBox.Text += "\n" + _value; });
         }
 
+        /// <inheritdoc />
         /// <summary>
         /// This function has to be overriden because of the inheritance
         /// </summary>

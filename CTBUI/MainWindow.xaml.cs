@@ -8,6 +8,7 @@ using System.Windows;
 using CTB;
 using CTB.JsonClasses;
 using CTB.Logger;
+using CTBUI.Properties;
 using Newtonsoft.Json;
 
 namespace CTBUI
@@ -47,7 +48,7 @@ namespace CTBUI
         private void CreateFolderStructure()
         {
             Console.SetOut(new ControlWriter.ControlWriter(BotsOutput));
-			Console.SetIn(new ControlReader.ControlReader());
+			Console.SetIn(new ControlReader.ControlReader(BotsOutput));
 
             if (!Directory.Exists("Files"))
             {
@@ -61,29 +62,29 @@ namespace CTBUI
             string releasePath = path + "Release/Files";
             string debugPath = path + "Debug/Files";
 
-            if (Directory.Exists(releasePath) && Directory.GetFiles(releasePath).Length > 0)
+            if (Directory.Exists(releasePath) && Directory.GetDirectories(releasePath).Length > 0)
             {
                 m_pathToFiles = releasePath;
                 CreateFolderStructureAndCopyFiles();
             }
-            else if(Directory.Exists(debugPath) && Directory.GetFiles(debugPath).Length > 0)
+            else if(Directory.Exists(debugPath) && Directory.GetDirectories(debugPath).Length > 0)
             {
                 m_pathToFiles = debugPath;
                 CreateFolderStructureAndCopyFiles();
             }
             else
             {
-                if (!Directory.Exists("Files/Authfiles"))
+                if (!Directory.Exists(Settings.Default.AuthfilesPath))
                 {
-                    Directory.CreateDirectory("Files/Authfiles");
+                    Directory.CreateDirectory(Settings.Default.AuthfilesPath);
                 }
-                if (!Directory.Exists("Files/2FAFiles"))
+                if (!Directory.Exists(Settings.Default.TwoFAfilesPath))
                 {
-                    Directory.CreateDirectory("Files/2FAFiles");
+                    Directory.CreateDirectory(Settings.Default.TwoFAfilesPath);
                 }
-                if (!Directory.Exists("Files/Configs"))
+                if (!Directory.Exists(Settings.Default.ConfigsPath))
                 {
-                    Directory.CreateDirectory("Files/Configs");
+                    Directory.CreateDirectory(Settings.Default.ConfigsPath);
                 }
             }
         }
@@ -96,17 +97,16 @@ namespace CTBUI
         {
             m_ListOfBots.Clear();
 
-            foreach(string file in Directory.GetFiles("Files/Configs"))
+            foreach(string file in Directory.GetFiles(Settings.Default.ConfigsPath))
             {
                 if(file.Contains(".json"))
                 {
-                    m_ListOfBots.Add(new BotListItem{m_Name = file.Split('\\').Last().Split('.')[0], m_Selected = false, m_Status = "offline"});
+                    m_ListOfBots.Add(new BotListItem{m_Name = file.Split('/').Last().Split('.')[0], m_Selected = false, m_Status = "offline"});
                 }
             }
         }
 
         /// <summary>
-        /// TODO rework and just split the path and get the item at the position
         /// </summary>
         /// <param name="_path"></param>
         /// <param name="_index"></param>
@@ -176,7 +176,7 @@ namespace CTBUI
             {
                 if(((BotListItem)bot).m_Selected)
                 {
-                    File.Delete($"Files/Configs/{((BotListItem) bot).m_Name}.json");
+                    File.Delete($"{Settings.Default.ConfigsPath}{((BotListItem) bot).m_Name}.json");
                 }
             }
 
@@ -200,7 +200,7 @@ namespace CTBUI
                     {
                         Console.WriteLine(newBot.m_Name);
 
-                        BotInfo botInfo = JsonConvert.DeserializeObject<BotInfo>(File.ReadAllText(m_pathToFiles + "/Configs/" + newBot.m_Name + ".json"));
+                        BotInfo botInfo = JsonConvert.DeserializeObject<BotInfo>(File.ReadAllText(Settings.Default.ConfigsPath + newBot.m_Name + ".json"));
 
                         Bot bot = new Bot(botInfo);
 

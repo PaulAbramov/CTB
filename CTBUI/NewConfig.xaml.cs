@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using CTB.JsonClasses;
+using CTBUI.Properties;
 using Newtonsoft.Json;
 
 namespace CTBUI
@@ -52,8 +53,8 @@ namespace CTBUI
                 int acceptFriendRequests = SetIntValue(AcceptFriendRequestsDropDown, EDefaultBoolValue.NO);
                 int acceptDonations = SetIntValue(AcceptDonationsDropDown, EDefaultBoolValue.YES);
                 int acceptEscrow = SetIntValue(AcceptEscrowDropDown, EDefaultBoolValue.NO);
-                int accept1on1 = SetIntValue(Accept1on1DropDown, EDefaultBoolValue.YES);
-                int accept1on2 = SetIntValue(Accept1on2DropDown, EDefaultBoolValue.NO);
+                int accept1On1 = SetIntValue(Accept1on1DropDown, EDefaultBoolValue.YES);
+                int accept1On2 = SetIntValue(Accept1on2DropDown, EDefaultBoolValue.NO);
 
                 List<string> admins = new List<string>();
 
@@ -69,18 +70,17 @@ namespace CTBUI
                     BotName = BotNameTextBox.Text,
                     AcceptFriendRequests = ConvertIntToBool(acceptFriendRequests),
                     AcceptDonations = ConvertIntToBool(acceptDonations),
-                    Accept1on1Trades = ConvertIntToBool(accept1on1),
-                    Accept1on2Trades = ConvertIntToBool(accept1on2),
+                    Accept1on1Trades = ConvertIntToBool(accept1On1),
+                    Accept1on2Trades = ConvertIntToBool(accept1On2),
                     AcceptEscrow = ConvertIntToBool(acceptEscrow),
                     Admins = admins.ToArray(),
                     GroupToInviteTo = GroupToInvetToTextBox.Text
                 };
 
-                if(!File.Exists($"Files/Configs/{botInfo.Username}.json"))
+                if(!File.Exists($"{Settings.Default.ConfigsPath}{botInfo.Username}.json"))
                 {
-                    File.WriteAllText($"Files/Configs/{botInfo.Username}.json", JsonConvert.SerializeObject(botInfo, Formatting.Indented));
+                    File.WriteAllText($"{Settings.Default.ConfigsPath}{botInfo.Username}.json", JsonConvert.SerializeObject(botInfo, Formatting.Indented));
                     Close();
-
                 }
                 else
                 {

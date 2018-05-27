@@ -1,7 +1,15 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="uri:settings" CurrentProfile="(Default)">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="CTBUI.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ConfigsPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Files/Configs/</Value>
+    </Setting>
+    <Setting Name="AuthfilesPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Files/Authfiles/</Value>
+    </Setting>
+    <Setting Name="TwoFAfilesPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Files/2FAFiles/</Value>
+    </Setting>
+  </Settings>
 </SettingsFile>

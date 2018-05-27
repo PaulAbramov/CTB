@@ -23,5 +23,10 @@ namespace CTBUI
 		{
 			InitializeComponent();
 		}
-	}
+
+        private void OkayButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+    }
 }
